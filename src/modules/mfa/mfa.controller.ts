@@ -7,6 +7,7 @@ import {
   verifyMfaSchema,
 } from '../../cummon/validators/mfa.validator';
 import { setAuthenticationCookies } from '../../cummon/utils/cookies';
+import response from '../../cummon/utils/response';
 
 export class MfaController {
   private mfaService: MfaService;
@@ -19,11 +20,16 @@ export class MfaController {
     async (req: Request, res: Response): Promise<any> => {
       const { secret, qrImageUrl, message } =
         await this.mfaService.generateMFASetup(req);
-      return res.status(HTTPSTATUS.OK).json({
+
+      return response.success(
+        res,
+        {
+          secret,
+          qrImageUrl,
+        },
         message,
-        secret,
-        qrImageUrl,
-      });
+        HTTPSTATUS.OK,
+      );
     },
   );
 
