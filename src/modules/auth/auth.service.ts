@@ -221,35 +221,39 @@ export class AuthService {
     }
 
     // 2. ROTATE SESSION: buat session baru
-    const newSession = await db.session.create({
-      data: {
-        userId: oldSession.userId,
-        userAgent: oldSession.userAgent,
-        expiredAt: calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN),
-        isRevoke: false,
-      },
-    });
+    // const newSession = await db.session.create({
+    //   data: {
+    //     userId: oldSession.userId,
+    //     userAgent: oldSession.userAgent,
+    //     expiredAt: calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN),
+    //     isRevoke: false,
+    //   },
+    // });
 
     // 3. Revoke session lama
-    await db.session.update({
-      where: { id: oldSession.id },
-      data: { isRevoke: true },
-    });
+    // await db.session.update({
+    //   where: { id: oldSession.id },
+    //   data: { isRevoke: true },
+    // });
 
     // 4. Generate token baru untuk session baru
+    // const accessToken = signJwtToken({
+    //   userId: newSession.userId,
+    //   sessionId: newSession.id,
+    // });
     const accessToken = signJwtToken({
-      userId: newSession.userId,
-      sessionId: newSession.id,
+      userId: oldSession.userId,
+      sessionId: oldSession.id,
     });
 
-    const newRefreshToken = signJwtToken(
-      { sessionId: newSession.id },
-      refreshTokenSignOptions,
-    );
+    // const newRefreshToken = signJwtToken(
+    //   { sessionId: newSession.id },
+    //   refreshTokenSignOptions,
+    // );
 
     // 5. Ambil user
     const user = await db.user.findUnique({
-      where: { id: newSession.userId },
+      where: { id: oldSession.userId },
       select: {
         id: true,
         name: true,
@@ -263,7 +267,7 @@ export class AuthService {
 
     return {
       accessToken,
-      newRefreshToken,
+      newRefreshToken: null,
       user,
     };
   }
