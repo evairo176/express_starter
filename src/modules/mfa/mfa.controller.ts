@@ -44,10 +44,8 @@ export class MfaController {
         code,
         secretKey,
       );
-      return res.status(HTTPSTATUS.OK).json({
-        message,
-        userPreferences,
-      });
+
+      return response.success(res, userPreferences, message, HTTPSTATUS.OK);
     },
   );
 
