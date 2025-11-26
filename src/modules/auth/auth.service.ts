@@ -192,6 +192,82 @@ export class AuthService {
     };
   }
 
+  // public async refreshToken(refreshTokenData: string) {
+  //   const { payload } = verifyJwtToken<RefreshTPayload>(refreshTokenData, {
+  //     secret: refreshTokenSignOptions.secret,
+  //   });
+
+  //   if (!payload) {
+  //     throw new UnauthorizedException('Invalid refresh token');
+  //   }
+
+  //   // 1. Ambil session yang lama
+  //   const oldSession = await db.session.findFirst({
+  //     where: { id: payload.sessionId },
+  //   });
+
+  //   const now = Date.now();
+
+  //   if (!oldSession) {
+  //     throw new UnauthorizedException('Session does not exist');
+  //   }
+
+  //   if (oldSession.isRevoke) {
+  //     throw new UnauthorizedException('Session has been revoked');
+  //   }
+
+  //   if (oldSession.expiredAt.getTime() <= now) {
+  //     throw new UnauthorizedException('Session expired or invalid');
+  //   }
+
+  //   // 2. ROTATE SESSION: buat session baru
+  //   const newSession = await db.session.create({
+  //     data: {
+  //       userId: oldSession.userId,
+  //       userAgent: oldSession.userAgent,
+  //       expiredAt: calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN),
+  //       isRevoke: false,
+  //     },
+  //   });
+
+  //   // 3. Revoke session lama
+  //   await db.session.update({
+  //     where: { id: oldSession.id },
+  //     data: { isRevoke: true },
+  //   });
+
+  //   // 4. Generate token baru untuk session baru
+  //   const accessToken = signJwtToken({
+  //     userId: newSession.userId,
+  //     sessionId: newSession.id,
+  //   });
+
+  //   const newRefreshToken = signJwtToken(
+  //     { sessionId: newSession.id },
+  //     refreshTokenSignOptions,
+  //   );
+
+  //   // 5. Ambil user
+  //   const user = await db.user.findUnique({
+  //     where: { id: newSession.userId },
+  //     select: {
+  //       id: true,
+  //       name: true,
+  //       email: true,
+  //       isEmailVerified: true,
+  //       createdAt: true,
+  //       updatedAt: true,
+  //       userPreferences: true,
+  //     },
+  //   });
+
+  //   return {
+  //     accessToken,
+  //     newRefreshToken,
+  //     user,
+  //   };
+  // }
+
   public async refreshToken(refreshTokenData: string) {
     const { payload } = verifyJwtToken<RefreshTPayload>(refreshTokenData, {
       secret: refreshTokenSignOptions.secret,
@@ -201,59 +277,45 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    // 1. Ambil session yang lama
-    const oldSession = await db.session.findFirst({
+    const session = await db.session.findFirst({
       where: { id: payload.sessionId },
     });
 
     const now = Date.now();
 
-    if (!oldSession) {
+    if (!session) {
       throw new UnauthorizedException('Session does not exist');
     }
 
-    if (oldSession.isRevoke) {
+    if (session.isRevoke) {
       throw new UnauthorizedException('Session has been revoked');
     }
 
-    if (oldSession.expiredAt.getTime() <= now) {
-      throw new UnauthorizedException('Session expired or invalid');
+    if (session.expiredAt.getTime() <= now) {
+      throw new UnauthorizedException('Session expired');
     }
 
-    // 2. ROTATE SESSION: buat session baru
-    // const newSession = await db.session.create({
-    //   data: {
-    //     userId: oldSession.userId,
-    //     userAgent: oldSession.userAgent,
-    //     expiredAt: calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN),
-    //     isRevoke: false,
-    //   },
-    // });
+    // extend session expiry
+    const newExpiredAt = calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN);
 
-    // 3. Revoke session lama
-    // await db.session.update({
-    //   where: { id: oldSession.id },
-    //   data: { isRevoke: true },
-    // });
-
-    // 4. Generate token baru untuk session baru
-    // const accessToken = signJwtToken({
-    //   userId: newSession.userId,
-    //   sessionId: newSession.id,
-    // });
-    const accessToken = signJwtToken({
-      userId: oldSession.userId,
-      sessionId: oldSession.id,
+    await db.session.update({
+      where: { id: session.id },
+      data: { expiredAt: newExpiredAt },
     });
 
-    // const newRefreshToken = signJwtToken(
-    //   { sessionId: newSession.id },
-    //   refreshTokenSignOptions,
-    // );
+    // tokens still use the same session
+    const accessToken = signJwtToken({
+      userId: session.userId,
+      sessionId: session.id,
+    });
 
-    // 5. Ambil user
+    const newRefreshToken = signJwtToken(
+      { sessionId: session.id },
+      refreshTokenSignOptions,
+    );
+
     const user = await db.user.findUnique({
-      where: { id: oldSession.userId },
+      where: { id: session.userId },
       select: {
         id: true,
         name: true,
@@ -267,7 +329,7 @@ export class AuthService {
 
     return {
       accessToken,
-      newRefreshToken: null,
+      newRefreshToken,
       user,
     };
   }
