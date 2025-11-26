@@ -53,10 +53,8 @@ export class MfaController {
     async (req: Request, res: Response): Promise<any> => {
       const { message, userPreferences } =
         await this.mfaService.revokeMFASetup(req);
-      return res.status(HTTPSTATUS.OK).json({
-        message,
-        userPreferences,
-      });
+
+      return response.success(res, userPreferences, message, HTTPSTATUS.OK);
     },
   );
   public verifyMFAForLogin = asyncHandler(
