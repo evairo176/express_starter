@@ -66,12 +66,14 @@ export class MfaController {
       const { user, accessToken, refreshToken } =
         await this.mfaService.verifyMFAForLogin(code, email, userAgent);
 
-      return setAuthenticationCookies({ res, accessToken, refreshToken })
-        .status(HTTPSTATUS.OK)
-        .json({
-          message: 'Verified & login successfully',
-          user,
-        });
+      setAuthenticationCookies({ res, accessToken, refreshToken });
+
+      return response.success(
+        res,
+        user,
+        'Verified & login successfully',
+        HTTPSTATUS.OK,
+      );
     },
   );
 }
