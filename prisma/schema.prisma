@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TYPE_USER {
+  TENANT
+  REGISTER
+}
+
+enum VerificationType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  // Tambahkan sesuai kebutuhanmu
+}
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  email           String   @unique
+  password        String
+  isEmailVerified Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // relation
+  userPreferences   UserPreferences?
+  sessions          Session[]
+  verificationCodes VerificationCode[] // Relasi 1:N
+}
+
+model UserPreferences {
+  id                String  @id @default(uuid()) @db.Uuid
+  enable2FA         Boolean @default(false)
+  emailNotification Boolean @default(true)
+  twoFactorSecret   String?
+
+  // relation
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique @db.Uuid
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  userAgent String?
+  isRevoke  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiredAt DateTime
+}
+
+model VerificationCode {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id])
+  code      String           @unique
+  type      VerificationType
+  createdAt DateTime         @default(now())
+  expiresAt DateTime
+
+  @@map("verification_codes") // agar sesuai dengan collection/tabel lama jika perlu
+}
+
+// =====================
+// CATEGORY
+// =====================
+model PortfolioCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  portfolios Portfolio[]
+}
+
+// =====================
+// TAG
+// =====================
+model PortfolioTag {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  portfolios PortfolioTagOnPortfolio[]
+}
+
+// pivot table many-to-many
+model PortfolioTagOnPortfolio {
+  portfolioId String
+  tagId       String
+
+  portfolio Portfolio    @relation(fields: [portfolioId], references: [id])
+  tag       PortfolioTag @relation(fields: [tagId], references: [id])
+
+  @@id([portfolioId, tagId])
+}
+
+// =====================
+// TECH STACK
+// =====================
+model TechStack {
+  id   String  @id @default(uuid())
+  name String  @unique
+  icon String? // optional URL atau icon name
+
+  portfolios TechStackOnPortfolio[]
+}
+
+// pivot table many-to-many
+model TechStackOnPortfolio {
+  portfolioId String
+  techId      String
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id])
+  tech      TechStack @relation(fields: [techId], references: [id])
+
+  @@id([portfolioId, techId])
+}
+
+// =====================
+// IMAGE
+// =====================
+model PortfolioImage {
+  id          String  @id @default(uuid())
+  portfolioId String
+  url         String
+  alt         String?
+  position    Int     @default(0) // untuk ordering (hero image, gallery)
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id])
+}
+
+// =====================
+// PORTFOLIO (MAIN)
+// =====================
+model Portfolio {
+  id          String  @id @default(uuid())
+  title       String
+  slug        String  @unique
+  description String? @db.Text
+  shortDesc   String? // untuk card list
+  categoryId  String?
+  isPublished Boolean @default(true)
+
+  liveUrl  String?
+  repoUrl  String?
+  featured Boolean @default(false)
+
+  // SEO
+  metaTitle String?
+  metaDesc  String?
+  metaImage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  category   PortfolioCategory?        @relation(fields: [categoryId], references: [id])
+  images     PortfolioImage[]
+  tags       PortfolioTagOnPortfolio[]
+  techStacks TechStackOnPortfolio[]
+}
