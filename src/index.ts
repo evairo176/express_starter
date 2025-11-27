@@ -14,6 +14,10 @@ import passport from './middlewares/passport';
 import sessionRoutes from './modules/session/session.routes';
 import mfaRoutes from './modules/mfa/mfa.routes';
 import portfolioCategoryRoutes from './modules/portfolioCategory/portfolioCategory.routes';
+import portfolioTagRoutes from './modules/portfolioTag/portfolioTag.routes';
+import techStackRoutes from './modules/techStack/techStack.routes';
+import imageRoutes from './modules/image/image.routes';
+import portfolioRoutes from './modules/portfolio/portfolio.routes';
 // import { seedRoles } from './libs/seed';
 
 const app = express();
@@ -47,7 +51,11 @@ app.get('/', (req, res) => {
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/mfa`, mfaRoutes);
 app.use(`${BASE_PATH}/session`, sessionRoutes);
+app.use(`${BASE_PATH}/portfolio`, portfolioRoutes);
 app.use(`${BASE_PATH}/portfolio-category`, portfolioCategoryRoutes);
+app.use(`${BASE_PATH}/portfolio-tag`, portfolioTagRoutes);
+app.use(`${BASE_PATH}/tech-stack`, techStackRoutes);
+app.use(`${BASE_PATH}/image`, imageRoutes);
 
 // app.use('/api/auth', authRouter);
 

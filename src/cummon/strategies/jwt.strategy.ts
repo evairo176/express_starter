@@ -5,7 +5,6 @@ import {
 } from 'passport-jwt';
 import passport, { PassportStatic } from 'passport';
 import { UnauthorizedException } from '../utils/catch-errors';
-import { ErrorCode } from '../enums/error-code.enum';
 import { config } from '../../config/app.config';
 import { userService } from '../../modules/user/user.module';
 import { db } from '../../database/database';
@@ -18,11 +17,9 @@ interface JwtPayload {
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
     (req) => {
-      // 1. Ambil dari Authorization header dulu
       const auth = req.headers.authorization;
       if (auth && auth.startsWith('Bearer ')) return auth.substring(7);
 
-      // 2. Fallback: ambil dari cookie (kalau kamu mau)
       return req.cookies?.accessToken ?? null;
     },
   ]),
@@ -33,20 +30,6 @@ const options: StrategyOptionsWithRequest = {
 };
 
 export const setupJwtStrategy = (passport: PassportStatic) => {
-  // passport.use(
-  //   new JwtStrategy(options, async (req, payload: JwtPayload, done) => {
-  //     try {
-  //       const user = await userService.findUserById(payload.userId);
-  //       if (!user) {
-  //         return done(null, false);
-  //       }
-  //       req.sessionId = payload.sessionId;
-  //       return done(null, user);
-  //     } catch (error) {
-  //       return done(error, false);
-  //     }
-  //   }),
-  // );
   passport.use(
     new JwtStrategy(options, async (req, payload: JwtPayload, done) => {
       try {

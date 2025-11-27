@@ -1,14 +1,10 @@
 import { Router } from 'express';
+import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { portfolioController } from './portfolio.module';
 
 const portfolioRoutes = Router();
 
-// portfolioRoutes.get(
-//   '/me/all',
-//   authenticateJWT,
-//   portfolioController.getPortfolioByUser,
-// );
-// portfolioRoutes.get('/', authenticateJWT, portfolioController.fin);
-
-// portfolioRoutes.post('/revoke/:id', portfolioController.revokePortfolio);
+portfolioRoutes.post('/', authenticateJWT, portfolioController.create);
+portfolioRoutes.get('/', authenticateJWT, portfolioController.findAll);
 
 export default portfolioRoutes;

@@ -1,11 +1,26 @@
+import { ErrorCode } from '../../cummon/enums/error-code.enum';
+import { BadRequestException } from '../../cummon/utils/catch-errors';
 import {
   CreatePortfolioDTO,
   UpdatePortfolioDTO,
-} from '../../cummon/zod/portofolio.validator';
+} from '../../cummon/zod/portofolio.schema';
 import { db } from '../../database/database';
 
 export class PortfolioService {
   public async create(data: CreatePortfolioDTO) {
+    const portfolio = await db.portfolio.findFirst({
+      where: {
+        slug: data?.slug,
+      },
+    });
+
+    if (portfolio) {
+      throw new BadRequestException(
+        `${portfolio?.slug} - ${portfolio.title} slug already`,
+        ErrorCode.SLUG_ALREADY_EXISTS,
+      );
+    }
+
     return db.$transaction(async (tx) => {
       const portfolio = await tx.portfolio.create({
         data: {
@@ -54,16 +69,84 @@ export class PortfolioService {
     });
   }
 
-  public async findAll() {
-    return db.portfolio.findMany({
+  public async findAll({
+    userId,
+    page = 1,
+    limit = 10,
+    sortBy = 'updatedAt',
+    sortDir = 'desc',
+    search,
+  }: {
+    userId?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: 'updatedAt'; // sesuaikan field
+    sortDir?: 'asc' | 'desc';
+    search?: string;
+  }) {
+    const skip = (page - 1) * limit;
+
+    // Filter dasar
+    const where: any = {
+      // userId,
+      // expiredAt: {
+      //   gt: new Date(),
+      // },
+    };
+
+    // Opsional: search pada userAgent
+    if (search && search.trim() !== '') {
+      where.title = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    // Hitung total (without pagination)
+    const total = await db.portfolio.count({
+      where,
+    });
+
+    // Query data
+    const Portfolios = await db.portfolio.findMany({
+      where,
+      orderBy: {
+        [sortBy]: sortDir,
+      },
+      skip: Number(skip),
+      take: Number(limit),
       include: {
         category: true,
         images: true,
-        tags: { include: { tag: true } },
-        techStacks: { include: { tech: true } },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        techStacks: {
+          include: {
+            tech: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: Portfolios,
+      metadata: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+        sortBy,
+        sortDir,
+        search: search ?? null,
+      },
+    };
   }
 
   public async findById(id: string) {

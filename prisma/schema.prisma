@@ -166,3 +166,22 @@ model Portfolio {
   tags       PortfolioTagOnPortfolio[]
   techStacks TechStackOnPortfolio[]
 }
+
+model Image {
+  id               String    @id @default(uuid())
+  publicId         String    @unique
+  url              String
+  secureUrl        String?
+  folder           String?
+  name             String? // <= TAMBAHKAN FIELD INI
+  originalFilename String?
+  format           String?
+  width            Int?
+  height           Int?
+  bytes            Int?
+  resourceType     String?
+  uploadedAt       DateTime?
+  provider         String    @default("cloudinary")
+  tags             String[]  @default([])
+  createdAt        DateTime  @default(now())
+}
