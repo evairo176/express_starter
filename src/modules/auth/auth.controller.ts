@@ -115,7 +115,7 @@ export class AuthController {
           accessToken: result.accessToken,
           mfaRequired: result.mfaRequired,
         },
-        'User login successfully',
+        'User login successfully auooo',
         HTTPSTATUS.OK,
       );
     },
