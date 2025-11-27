@@ -77,9 +77,14 @@ class AuthController {
             if (!refreshToken) {
                 throw new catch_errors_1.UnauthorizedException('Missing refresh token');
             }
-            const { accessToken, newRefreshToken, user } = yield this.authService.refreshToken(refreshToken);
+            const { accessToken, newRefreshToken, user, refreshTokenExpiresAt } = yield this.authService.refreshToken(refreshToken);
             if (newRefreshToken) {
-                res.cookie('refreshToken', newRefreshToken, (0, cookies_1.getRefreshTokenCookieOptions)());
+                if (refreshTokenExpiresAt) {
+                    res.cookie('refreshToken', newRefreshToken, (0, cookies_1.getRefreshTokenCookieOptions)({ expires: refreshTokenExpiresAt }));
+                }
+                else {
+                    res.cookie('refreshToken', newRefreshToken, (0, cookies_1.getRefreshTokenCookieOptions)());
+                }
             }
             res.cookie('accessToken', accessToken, (0, cookies_1.getAccessTokenCookieOptions)());
             return response_1.default.success(res, {

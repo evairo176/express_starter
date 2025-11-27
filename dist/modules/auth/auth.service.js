@@ -243,8 +243,17 @@ class AuthService {
             if (remainingMs <= 0) {
                 throw new catch_errors_1.UnauthorizedException('Session expired');
             }
+            const refreshTokenExpiresAt = Math.floor(remainingMs / 1000);
             // buat refresh token baru, tetapi expired mengikuti session.expiredAt
-            const newRefreshToken = (0, jwt_1.signJwtToken)({ sessionId: session.id }, Object.assign(Object.assign({}, jwt_1.refreshTokenSignOptions), { expiresIn: Math.floor(remainingMs / 1000) }));
+            const newRefreshToken = (0, jwt_1.signJwtToken)({ sessionId: session.id }, {
+                secret: jwt_1.refreshTokenSignOptions.secret,
+                expiresIn: refreshTokenExpiresAt, // dalam detik
+            });
+            // console.log({
+            //   accessToken,
+            //   newRefreshToken,
+            //   expiresIn: Math.floor(remainingMs / 1000),
+            // });
             const user = yield database_1.db.user.findUnique({
                 where: { id: session.userId },
                 select: {
@@ -261,6 +270,8 @@ class AuthService {
                 accessToken,
                 newRefreshToken,
                 user,
+                // tambahkan expiry token refresh agar controller bisa set cookie dengan maxAge yang tepat
+                refreshTokenExpiresAt: session.expiredAt, // <------------
             };
         });
     }

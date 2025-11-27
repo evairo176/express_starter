@@ -23,11 +23,9 @@ const options = {
     jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
         (req) => {
             var _a, _b;
-            // 1. Ambil dari Authorization header dulu
             const auth = req.headers.authorization;
             if (auth && auth.startsWith('Bearer '))
                 return auth.substring(7);
-            // 2. Fallback: ambil dari cookie (kalau kamu mau)
             return (_b = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.accessToken) !== null && _b !== void 0 ? _b : null;
         },
     ]),
@@ -37,20 +35,6 @@ const options = {
     passReqToCallback: true,
 };
 const setupJwtStrategy = (passport) => {
-    // passport.use(
-    //   new JwtStrategy(options, async (req, payload: JwtPayload, done) => {
-    //     try {
-    //       const user = await userService.findUserById(payload.userId);
-    //       if (!user) {
-    //         return done(null, false);
-    //       }
-    //       req.sessionId = payload.sessionId;
-    //       return done(null, user);
-    //     } catch (error) {
-    //       return done(error, false);
-    //     }
-    //   }),
-    // );
     passport.use(new passport_jwt_1.Strategy(options, (req, payload, done) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // 1. Cek user masih ada

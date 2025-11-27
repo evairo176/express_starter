@@ -10,10 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PortfolioService = void 0;
+const catch_errors_1 = require("../../cummon/utils/catch-errors");
 const database_1 = require("../../database/database");
 class PortfolioService {
     create(data) {
         return __awaiter(this, void 0, void 0, function* () {
+            const portfolio = yield database_1.db.portfolio.findFirst({
+                where: {
+                    slug: data === null || data === void 0 ? void 0 : data.slug,
+                },
+            });
+            if (portfolio) {
+                throw new catch_errors_1.BadRequestException(`${portfolio === null || portfolio === void 0 ? void 0 : portfolio.slug} - ${portfolio.title} slug already`, "SLUG_ALREADY_EXISTS" /* ErrorCode.SLUG_ALREADY_EXISTS */);
+            }
             return database_1.db.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b, _c;
                 const portfolio = yield tx.portfolio.create({
@@ -62,17 +71,65 @@ class PortfolioService {
             }));
         });
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.portfolio.findMany({
+    findAll(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ userId, page = 1, limit = 10, sortBy = 'updatedAt', sortDir = 'desc', search, }) {
+            const skip = (page - 1) * limit;
+            // Filter dasar
+            const where = {
+            // userId,
+            // expiredAt: {
+            //   gt: new Date(),
+            // },
+            };
+            // Opsional: search pada userAgent
+            if (search && search.trim() !== '') {
+                where.title = {
+                    contains: search,
+                    mode: 'insensitive',
+                };
+            }
+            // Hitung total (without pagination)
+            const total = yield database_1.db.portfolio.count({
+                where,
+            });
+            // Query data
+            const Portfolios = yield database_1.db.portfolio.findMany({
+                where,
+                orderBy: {
+                    [sortBy]: sortDir,
+                },
+                skip: Number(skip),
+                take: Number(limit),
                 include: {
                     category: true,
                     images: true,
-                    tags: { include: { tag: true } },
-                    techStacks: { include: { tech: true } },
+                    tags: {
+                        include: {
+                            tag: true,
+                        },
+                    },
+                    techStacks: {
+                        include: {
+                            tech: true,
+                        },
+                    },
                 },
-                orderBy: { createdAt: 'desc' },
             });
+            const totalPages = Math.ceil(total / limit);
+            return {
+                data: Portfolios,
+                metadata: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1,
+                    sortBy,
+                    sortDir,
+                    search: search !== null && search !== void 0 ? search : null,
+                },
+            };
         });
     }
     findById(id) {

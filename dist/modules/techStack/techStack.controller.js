@@ -12,23 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PortfolioController = void 0;
+exports.TechStackController = void 0;
 const middlewares_1 = require("../../middlewares");
 const response_1 = __importDefault(require("../../cummon/utils/response"));
-const portofolio_schema_1 = require("../../cummon/zod/portofolio.schema");
 const http_config_1 = require("../../config/http.config");
-class PortfolioController {
-    constructor(portfolioService) {
+const tech_stack_schema_1 = require("../../cummon/zod/tech-stack.schema");
+class TechStackController {
+    constructor(TechStackService) {
         this.create = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const parsed = portofolio_schema_1.CreatePortfolioSchema.parse(req.body);
-            const result = yield this.portfolioService.create(parsed);
-            return response_1.default.success(res, result, `${result === null || result === void 0 ? void 0 : result.title} new portfolio created`, 201);
+            const parsed = tech_stack_schema_1.CreateTechStackSchema.parse(req.body);
+            const result = yield this.TechStackService.create(parsed);
+            return response_1.default.success(res, result, `${result === null || result === void 0 ? void 0 : result.name} (${result === null || result === void 0 ? void 0 : result.name} created)`, http_config_1.HTTPSTATUS.CREATED);
         }));
         this.findAll = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { data, metadata } = yield this.portfolioService.findAll(Object.assign({}, req === null || req === void 0 ? void 0 : req.query));
-            return response_1.default.success(res, data, `Find all portolio successfully`, http_config_1.HTTPSTATUS.OK, metadata);
+            const { data, metadata } = yield this.TechStackService.findAll(Object.assign({}, req === null || req === void 0 ? void 0 : req.query));
+            return response_1.default.success(res, data, `Find all Tech Stack successfully`, http_config_1.HTTPSTATUS.OK, metadata);
         }));
-        this.portfolioService = portfolioService;
+        this.TechStackService = TechStackService;
     }
 }
-exports.PortfolioController = PortfolioController;
+exports.TechStackController = TechStackController;

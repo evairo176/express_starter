@@ -14,9 +14,10 @@ const defaults = {
     sameSite: isProd ? 'none' : 'lax',
     // domain: undefined, // set if you need a specific domain (e.g. '.example.com')
 };
-const getRefreshTokenCookieOptions = () => {
+const getRefreshTokenCookieOptions = (opt) => {
+    var _a;
     const expiresIn = app_config_1.config.JWT.REFRESH_EXPIRES_IN;
-    const expires = (0, date_time_1.calculateExpirationDate)(expiresIn);
+    const expires = (_a = opt === null || opt === void 0 ? void 0 : opt.expires) !== null && _a !== void 0 ? _a : (0, date_time_1.calculateExpirationDate)(expiresIn);
     return Object.assign(Object.assign({}, defaults), { expires, path: exports.AUTH_PATH });
 };
 exports.getRefreshTokenCookieOptions = getRefreshTokenCookieOptions;

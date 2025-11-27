@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const image_module_1 = require("./image.module");
+const multer_1 = require("../../cummon/utils/multer");
+const imageRoutes = (0, express_1.Router)();
+imageRoutes.post('/', jwt_strategy_1.authenticateJWT, multer_1.upload.fields(multer_1.fileFields), image_module_1.imageController.create);
+imageRoutes.get('/', jwt_strategy_1.authenticateJWT, image_module_1.imageController.findAll);
+exports.default = imageRoutes;
