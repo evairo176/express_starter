@@ -19,6 +19,7 @@ const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const passport_1 = __importDefault(require("./middlewares/passport"));
 const session_routes_1 = __importDefault(require("./modules/session/session.routes"));
 const mfa_routes_1 = __importDefault(require("./modules/mfa/mfa.routes"));
+const portfolioCategory_routes_1 = __importDefault(require("./modules/portfolioCategory/portfolioCategory.routes"));
 // import { seedRoles } from './libs/seed';
 const app = (0, express_1.default)();
 const BASE_PATH = app_config_1.config.BASE_PATH;
@@ -45,6 +46,7 @@ app.get('/', (req, res) => {
 app.use(`${BASE_PATH}/auth`, auth_routes_1.default);
 app.use(`${BASE_PATH}/mfa`, mfa_routes_1.default);
 app.use(`${BASE_PATH}/session`, session_routes_1.default);
+app.use(`${BASE_PATH}/portfolio-category`, portfolioCategory_routes_1.default);
 // app.use('/api/auth', authRouter);
 // Swagger configuration options
 const swaggerOptions = {

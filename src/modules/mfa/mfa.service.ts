@@ -7,7 +7,7 @@ import {
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { db } from '../../database/database';
-import { thirtyDaysFromNow } from '../../cummon/utils/date-time';
+import { oneDaysFromNow } from '../../cummon/utils/date-time';
 import { refreshTokenSignOptions, signJwtToken } from '../../cummon/utils/jwt';
 
 export class MfaService {
@@ -179,7 +179,7 @@ export class MfaService {
       data: {
         userId: user.id,
         userAgent: userAgent ?? null,
-        expiredAt: thirtyDaysFromNow(),
+        expiredAt: oneDaysFromNow(),
       },
     });
 

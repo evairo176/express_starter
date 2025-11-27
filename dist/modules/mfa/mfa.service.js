@@ -165,7 +165,7 @@ class MfaService {
                 data: {
                     userId: user.id,
                     userAgent: userAgent !== null && userAgent !== void 0 ? userAgent : null,
-                    expiredAt: (0, date_time_1.thirtyDaysFromNow)(),
+                    expiredAt: (0, date_time_1.oneDaysFromNow)(),
                 },
             });
             const accessToken = (0, jwt_1.signJwtToken)({

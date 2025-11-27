@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateExpirationDate = exports.anHourFromNow = exports.threeMinutesAgo = exports.tenMinutesAgo = exports.fortyFiveMinutesFromNow = exports.thirtyDaysFromNow = exports.ONE_DAY_IN_MS = void 0;
+exports.calculateExpirationDate = exports.anHourFromNow = exports.threeMinutesAgo = exports.tenMinutesAgo = exports.fortyFiveMinutesFromNow = exports.oneDaysFromNow = exports.ONE_DAY_IN_MS = void 0;
 const date_fns_1 = require("date-fns");
 exports.ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
-const thirtyDaysFromNow = () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-exports.thirtyDaysFromNow = thirtyDaysFromNow;
+const oneDaysFromNow = () => new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+exports.oneDaysFromNow = oneDaysFromNow;
 const fortyFiveMinutesFromNow = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 45);

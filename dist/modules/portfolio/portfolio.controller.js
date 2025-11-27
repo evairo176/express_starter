@@ -14,8 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PortfolioController = void 0;
 const middlewares_1 = require("../../middlewares");
-const portofolio_validator_1 = require("../../cummon/validators/portofolio.validator");
 const response_1 = __importDefault(require("../../cummon/utils/response"));
+const portofolio_validator_1 = require("../../cummon/zod/portofolio.validator");
 class PortfolioController {
     constructor(portfolioService) {
         this.create = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

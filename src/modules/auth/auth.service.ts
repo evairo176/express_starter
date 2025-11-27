@@ -18,8 +18,7 @@ import {
   anHourFromNow,
   calculateExpirationDate,
   fortyFiveMinutesFromNow,
-  ONE_DAY_IN_MS,
-  thirtyDaysFromNow,
+  oneDaysFromNow,
   threeMinutesAgo,
 } from '../../cummon/utils/date-time';
 import { compareValue, hashValue } from '../../cummon/utils/bcrypt';
@@ -153,7 +152,7 @@ export class AuthService {
       data: {
         userId: user.id,
         userAgent: userAgent ?? null,
-        expiredAt: thirtyDaysFromNow(),
+        expiredAt: oneDaysFromNow(),
       },
     });
 

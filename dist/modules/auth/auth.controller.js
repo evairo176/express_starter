@@ -15,14 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const middlewares_1 = require("../../middlewares");
 const http_config_1 = require("../../config/http.config");
-const auth_validator_1 = require("../../cummon/validators/auth.validator");
+const auth_schema_1 = require("../../cummon/zod/auth.schema");
 const cookies_1 = require("../../cummon/utils/cookies");
 const catch_errors_1 = require("../../cummon/utils/catch-errors");
 const response_1 = __importDefault(require("../../cummon/utils/response"));
 class AuthController {
     constructor(authService, mfaService) {
         this.register = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const body = auth_validator_1.registerSchema.parse(Object.assign({}, req === null || req === void 0 ? void 0 : req.body));
+            const body = auth_schema_1.registerSchema.parse(Object.assign({}, req === null || req === void 0 ? void 0 : req.body));
             const result = yield this.authService.register(body);
             return res.status(http_config_1.HTTPSTATUS.CREATED).json({
                 message: 'User registered successfully',
@@ -38,7 +38,7 @@ class AuthController {
             // atau fallback ke body:
             const bodyUa = (_a = req.body) === null || _a === void 0 ? void 0 : _a.userAgent;
             const userAgent = xUa || ua || bodyUa || 'unknown';
-            const body = auth_validator_1.loginSchema.parse(Object.assign(Object.assign({}, req === null || req === void 0 ? void 0 : req.body), { userAgent }));
+            const body = auth_schema_1.loginSchema.parse(Object.assign(Object.assign({}, req === null || req === void 0 ? void 0 : req.body), { userAgent }));
             const code = (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.code;
             const existingUser = yield this.authService.getProfile(body === null || body === void 0 ? void 0 : body.email);
             if (existingUser.mfaRequired && !code) {
@@ -88,17 +88,17 @@ class AuthController {
             }, 'Refresh access token successfully', http_config_1.HTTPSTATUS.OK);
         }));
         this.verifyEmail = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { code } = auth_validator_1.verificationEmailSchema.parse(Object.assign({}, req === null || req === void 0 ? void 0 : req.body));
+            const { code } = auth_schema_1.verificationEmailSchema.parse(Object.assign({}, req === null || req === void 0 ? void 0 : req.body));
             yield this.authService.verifyEmail(code);
             return response_1.default.success(res, null, 'Email verified successfully', http_config_1.HTTPSTATUS.OK);
         }));
         this.forgotPassword = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const email = auth_validator_1.emailSchema.parse(req === null || req === void 0 ? void 0 : req.body.email);
+            const email = auth_schema_1.emailSchema.parse(req === null || req === void 0 ? void 0 : req.body.email);
             yield this.authService.forgotPassword(email);
             return response_1.default.success(res, null, 'Password reset email sent', http_config_1.HTTPSTATUS.OK);
         }));
         this.resetPassword = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
-            const body = auth_validator_1.resetPasswordSchema.parse(req === null || req === void 0 ? void 0 : req.body);
+            const body = auth_schema_1.resetPasswordSchema.parse(req === null || req === void 0 ? void 0 : req.body);
             yield this.authService.resetPassword(body);
             (0, cookies_1.clearAuthenticationCookies)(res);
             return response_1.default.success(res, null, 'Reset password successfully', http_config_1.HTTPSTATUS.OK);
