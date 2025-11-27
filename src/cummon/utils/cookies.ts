@@ -21,9 +21,11 @@ const defaults: CookieOptions = {
   sameSite: isProd ? ('none' as const) : ('lax' as const),
   // domain: undefined, // set if you need a specific domain (e.g. '.example.com')
 };
-export const getRefreshTokenCookieOptions = (): CookieOptions => {
+export const getRefreshTokenCookieOptions = (opt?: {
+  expires?: Date;
+}): CookieOptions => {
   const expiresIn = config.JWT.REFRESH_EXPIRES_IN;
-  const expires = calculateExpirationDate(expiresIn);
+  const expires = opt?.expires ?? calculateExpirationDate(expiresIn);
   return {
     ...defaults,
     expires,

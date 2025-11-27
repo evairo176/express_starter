@@ -315,14 +315,22 @@ export class AuthService {
       throw new UnauthorizedException('Session expired');
     }
 
+    const refreshTokenExpiresAt = Math.floor(remainingMs / 1000);
+
     // buat refresh token baru, tetapi expired mengikuti session.expiredAt
     const newRefreshToken = signJwtToken(
       { sessionId: session.id },
       {
-        ...refreshTokenSignOptions,
-        expiresIn: Math.floor(remainingMs / 1000), // dalam detik
+        secret: refreshTokenSignOptions.secret,
+        expiresIn: refreshTokenExpiresAt, // dalam detik
       },
     );
+
+    // console.log({
+    //   accessToken,
+    //   newRefreshToken,
+    //   expiresIn: Math.floor(remainingMs / 1000),
+    // });
 
     const user = await db.user.findUnique({
       where: { id: session.userId },
@@ -341,6 +349,9 @@ export class AuthService {
       accessToken,
       newRefreshToken,
       user,
+
+      // tambahkan expiry token refresh agar controller bisa set cookie dengan maxAge yang tepat
+      refreshTokenExpiresAt: session.expiredAt, // <------------
     };
   }
 
