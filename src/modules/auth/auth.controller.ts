@@ -8,7 +8,7 @@ import {
   registerSchema,
   resetPasswordSchema,
   verificationEmailSchema,
-} from '../../cummon/validators/auth.validator';
+} from '../../cummon/zod/auth.schema';
 import {
   clearAuthenticationCookies,
   getAccessTokenCookieOptions,

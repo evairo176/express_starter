@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
-import { CreatePortfolioSchema } from '../../cummon/validators/portofolio.validator';
+
 import { PortfolioService } from './portfolio.service';
 import response from '../../cummon/utils/response';
+import { CreatePortfolioSchema } from '../../cummon/zod/portofolio.validator';
 
 export class PortfolioController {
   private portfolioService: PortfolioService;

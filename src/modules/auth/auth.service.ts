@@ -295,13 +295,13 @@ export class AuthService {
       throw new UnauthorizedException('Session expired');
     }
 
-    // extend session expiry
-    const newExpiredAt = calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN);
+    // // extend session expiry
+    // const newExpiredAt = calculateExpirationDate(config.JWT.REFRESH_EXPIRES_IN);
 
-    await db.session.update({
-      where: { id: session.id },
-      data: { expiredAt: newExpiredAt },
-    });
+    // await db.session.update({
+    //   where: { id: session.id },
+    //   data: { expiredAt: newExpiredAt },
+    // });
 
     // tokens still use the same session
     const accessToken = signJwtToken({
@@ -309,9 +309,20 @@ export class AuthService {
       sessionId: session.id,
     });
 
+    // hitung sisa waktu session
+    const remainingMs = session.expiredAt.getTime() - Date.now();
+
+    if (remainingMs <= 0) {
+      throw new UnauthorizedException('Session expired');
+    }
+
+    // buat refresh token baru, tetapi expired mengikuti session.expiredAt
     const newRefreshToken = signJwtToken(
       { sessionId: session.id },
-      refreshTokenSignOptions,
+      {
+        ...refreshTokenSignOptions,
+        expiresIn: Math.floor(remainingMs / 1000), // dalam detik
+      },
     );
 
     const user = await db.user.findUnique({

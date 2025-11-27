@@ -1,7 +1,7 @@
 import {
   CreatePortfolioDTO,
   UpdatePortfolioDTO,
-} from '../../cummon/interface/auth.interface';
+} from '../../cummon/zod/portofolio.validator';
 import { db } from '../../database/database';
 
 export class PortfolioService {

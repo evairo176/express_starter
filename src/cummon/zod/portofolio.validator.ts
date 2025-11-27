@@ -28,3 +28,6 @@ export const CreatePortfolioSchema = z.object({
 export const UpdatePortfolioSchema = CreatePortfolioSchema.partial().extend({
   id: z.string().uuid(),
 });
+
+export type CreatePortfolioDTO = z.infer<typeof CreatePortfolioSchema>;
+export type UpdatePortfolioDTO = z.infer<typeof UpdatePortfolioSchema>;

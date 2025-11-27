@@ -5,7 +5,7 @@ import { MfaService } from './mfa.service';
 import {
   verifyMFAForLoginSchema,
   verifyMfaSchema,
-} from '../../cummon/validators/mfa.validator';
+} from '../../cummon/zod/mfa.schema';
 import { setAuthenticationCookies } from '../../cummon/utils/cookies';
 import response from '../../cummon/utils/response';
 

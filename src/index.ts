@@ -13,6 +13,7 @@ import authRoutes from './modules/auth/auth.routes';
 import passport from './middlewares/passport';
 import sessionRoutes from './modules/session/session.routes';
 import mfaRoutes from './modules/mfa/mfa.routes';
+import portfolioCategoryRoutes from './modules/portfolioCategory/portfolioCategory.routes';
 // import { seedRoles } from './libs/seed';
 
 const app = express();
@@ -46,6 +47,7 @@ app.get('/', (req, res) => {
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/mfa`, mfaRoutes);
 app.use(`${BASE_PATH}/session`, sessionRoutes);
+app.use(`${BASE_PATH}/portfolio-category`, portfolioCategoryRoutes);
 
 // app.use('/api/auth', authRouter);
 

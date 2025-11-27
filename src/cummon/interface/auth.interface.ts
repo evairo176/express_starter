@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  CreatePortfolioSchema,
-  UpdatePortfolioSchema,
-} from '../validators/portofolio.validator';
 
 export interface RegisterDto {
   name: string;
@@ -20,6 +16,3 @@ export interface ResetPasswordDto {
   password: string;
   verificationCode: string;
 }
-
-export type CreatePortfolioDTO = z.infer<typeof CreatePortfolioSchema>;
-export type UpdatePortfolioDTO = z.infer<typeof UpdatePortfolioSchema>;
