@@ -66,7 +66,9 @@ class TechStackService {
     }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.techStack.findUnique({ where: { id } });
+            return database_1.db.techStack.findUnique({
+                where: { id },
+            });
         });
     }
     update(data) {

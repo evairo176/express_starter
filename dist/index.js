@@ -11,8 +11,8 @@ const helmet_1 = __importDefault(require("helmet"));
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 // Import routes
-const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swagger_1 = require("./config/swagger");
 const middlewares_1 = require("./middlewares");
 const app_config_1 = require("./config/app.config");
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
@@ -57,30 +57,12 @@ app.use(`${BASE_PATH}/tech-stack`, techStack_routes_1.default);
 app.use(`${BASE_PATH}/image`, image_routes_1.default);
 // app.use('/api/auth', authRouter);
 // Swagger configuration options
-const swaggerOptions = {
-    swaggerDefinition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Authentication API',
-            version: '1.0.0',
-            description: 'API documentation',
-        },
-        servers: [
-            {
-                url: process.env.BASE_URL,
-                description: 'Local server',
-            },
-        ],
-    },
-    apis: ['./src/routes/*.ts'], // Path to the API docs
-};
-const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
 // seed
 // seedRoles();
 // seedBusinessLines();
 // seedBusinessTypes();
 // seedCompanyWithUser();
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
+app.use(`${BASE_PATH}/docs`, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerDocs));
 app.use(middlewares_1.errorHandler);
 // app.use(notFound);
 // Start the server and export the server instance

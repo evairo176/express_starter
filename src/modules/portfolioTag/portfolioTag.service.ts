@@ -76,7 +76,9 @@ export class PortfolioTagService {
   }
 
   public async findById(id: string) {
-    return db.portfolioTag.findUnique({ where: { id } });
+    return db.portfolioTag.findUnique({
+      where: { id },
+    });
   }
 
   public async update(data: UpdatePortfolioTagDTO) {

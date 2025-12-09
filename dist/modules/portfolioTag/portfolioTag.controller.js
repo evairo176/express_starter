@@ -28,6 +28,22 @@ class PortfolioTagController {
             const { data, metadata } = yield this.PortfolioTagService.findAll(Object.assign({}, req === null || req === void 0 ? void 0 : req.query));
             return response_1.default.success(res, data, `Find all category successfully`, http_config_1.HTTPSTATUS.OK, metadata);
         }));
+        this.getOne = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            const result = yield this.PortfolioTagService.findById(req.params.id);
+            if (!result) {
+                return response_1.default.error(res, 'Tag not found', http_config_1.HTTPSTATUS.NOT_FOUND);
+            }
+            return response_1.default.success(res, result, `Get tag successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
+        this.update = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            const parsed = portfolio_tag_schema_1.UpdatePortfolioTagSchema.parse(Object.assign(Object.assign({}, req.body), { id: req.params.id }));
+            const result = yield this.PortfolioTagService.update(parsed);
+            return response_1.default.success(res, result, `Tag updated successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
+        this.destroy = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            yield this.PortfolioTagService.delete(req.params.id);
+            return response_1.default.success(res, null, `Tag deleted successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
         this.PortfolioTagService = PortfolioTagService;
     }
 }

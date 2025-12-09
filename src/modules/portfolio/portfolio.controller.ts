@@ -3,7 +3,10 @@ import { asyncHandler } from '../../middlewares';
 
 import { PortfolioService } from './portfolio.service';
 import response from '../../cummon/utils/response';
-import { CreatePortfolioSchema } from '../../cummon/zod/portofolio.schema';
+import {
+  CreatePortfolioSchema,
+  UpdatePortfolioSchema,
+} from '../../cummon/zod/portofolio.schema';
 import { HTTPSTATUS } from '../../config/http.config';
 
 export class PortfolioController {
@@ -39,6 +42,54 @@ export class PortfolioController {
         `Find all portolio successfully`,
         HTTPSTATUS.OK,
         metadata,
+      );
+    },
+  );
+
+  public getOne = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const result = await this.portfolioService.findById(req.params.id);
+
+      if (!result) {
+        return response.error(res, 'Portfolio not found', HTTPSTATUS.NOT_FOUND);
+      }
+
+      return response.success(
+        res,
+        result,
+        `Get portfolio successfully`,
+        HTTPSTATUS.OK,
+      );
+    },
+  );
+
+  public update = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const parsed = UpdatePortfolioSchema.parse({
+        ...req.body,
+        id: req.params.id,
+      });
+
+      const result = await this.portfolioService.update(parsed);
+
+      return response.success(
+        res,
+        result,
+        `Portfolio updated successfully`,
+        HTTPSTATUS.OK,
+      );
+    },
+  );
+
+  public destroy = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      await this.portfolioService.delete(req.params.id);
+
+      return response.success(
+        res,
+        null,
+        `Portfolio deleted successfully`,
+        HTTPSTATUS.OK,
       );
     },
   );

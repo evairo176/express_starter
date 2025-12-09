@@ -70,4 +70,16 @@ const setupJwtStrategy = (passport) => {
     })));
 };
 exports.setupJwtStrategy = setupJwtStrategy;
-exports.authenticateJWT = passport_1.default.authenticate('jwt', { session: false });
+const authenticateJWT = (req, res, next) => {
+    passport_1.default.authenticate('jwt', { session: false }, (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        if (!user) {
+            return next(new catch_errors_1.UnauthorizedException((info === null || info === void 0 ? void 0 : info.message) || 'Unauthorized access'));
+        }
+        req.user = user;
+        return next();
+    })(req, res, next);
+};
+exports.authenticateJWT = authenticateJWT;

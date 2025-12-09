@@ -76,7 +76,9 @@ export class TechStackService {
   }
 
   public async findById(id: string) {
-    return db.techStack.findUnique({ where: { id } });
+    return db.techStack.findUnique({
+      where: { id },
+    });
   }
 
   public async update(data: UpdateTechStackDTO) {

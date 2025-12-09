@@ -66,7 +66,9 @@ class PortfolioTagService {
     }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.portfolioTag.findUnique({ where: { id } });
+            return database_1.db.portfolioTag.findUnique({
+                where: { id },
+            });
         });
     }
     update(data) {

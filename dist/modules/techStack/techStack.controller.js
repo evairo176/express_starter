@@ -28,6 +28,22 @@ class TechStackController {
             const { data, metadata } = yield this.TechStackService.findAll(Object.assign({}, req === null || req === void 0 ? void 0 : req.query));
             return response_1.default.success(res, data, `Find all Tech Stack successfully`, http_config_1.HTTPSTATUS.OK, metadata);
         }));
+        this.getOne = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            const result = yield this.TechStackService.findById(req.params.id);
+            if (!result) {
+                return response_1.default.error(res, 'Tech stack not found', http_config_1.HTTPSTATUS.NOT_FOUND);
+            }
+            return response_1.default.success(res, result, `Get tech stack successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
+        this.update = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            const parsed = tech_stack_schema_1.UpdateTechStackSchema.parse(Object.assign(Object.assign({}, req.body), { id: req.params.id }));
+            const result = yield this.TechStackService.update(parsed);
+            return response_1.default.success(res, result, `Tech stack updated successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
+        this.destroy = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            yield this.TechStackService.delete(req.params.id);
+            return response_1.default.success(res, null, `Tech stack deleted successfully`, http_config_1.HTTPSTATUS.OK);
+        }));
         this.TechStackService = TechStackService;
     }
 }

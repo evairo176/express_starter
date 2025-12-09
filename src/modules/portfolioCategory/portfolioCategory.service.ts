@@ -76,7 +76,9 @@ export class PortfolioCategoryService {
   }
 
   public async findById(id: string) {
-    return db.portfolioCategory.findUnique({ where: { id } });
+    return db.portfolioCategory.findUnique({
+      where: { id },
+    });
   }
 
   public async update(data: UpdatePortfolioCategoryDTO) {

@@ -4,6 +4,7 @@ import {
   StrategyOptionsWithRequest,
 } from 'passport-jwt';
 import passport, { PassportStatic } from 'passport';
+import { Request, Response, NextFunction } from 'express';
 import { UnauthorizedException } from '../utils/catch-errors';
 import { config } from '../../config/app.config';
 import { userService } from '../../modules/user/user.module';
@@ -77,4 +78,25 @@ export const setupJwtStrategy = (passport: PassportStatic) => {
     }),
   );
 };
-export const authenticateJWT = passport.authenticate('jwt', { session: false });
+export const authenticateJWT = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  passport.authenticate(
+    'jwt',
+    { session: false },
+    (err: any, user: any, info: any) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return next(
+          new UnauthorizedException(info?.message || 'Unauthorized access'),
+        );
+      }
+      req.user = user;
+      return next();
+    },
+  )(req, res, next);
+};

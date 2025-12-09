@@ -5,8 +5,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 // Import routes
-import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import { swaggerDocs } from './config/swagger';
 import { errorHandler, morganMiddleware } from './middlewares';
 import { config } from './config/app.config';
 import authRoutes from './modules/auth/auth.routes';
@@ -60,25 +60,6 @@ app.use(`${BASE_PATH}/image`, imageRoutes);
 // app.use('/api/auth', authRouter);
 
 // Swagger configuration options
-const swaggerOptions = {
-  swaggerDefinition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Authentication API',
-      version: '1.0.0',
-      description: 'API documentation',
-    },
-    servers: [
-      {
-        url: process.env.BASE_URL,
-        description: 'Local server',
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts'], // Path to the API docs
-};
-
-const swaggerDocs = swaggerJSDoc(swaggerOptions);
 
 // seed
 
@@ -88,7 +69,7 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions);
 // seedBusinessTypes();
 // seedCompanyWithUser();
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use(`${BASE_PATH}/docs`, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(errorHandler);
 // app.use(notFound);
 
