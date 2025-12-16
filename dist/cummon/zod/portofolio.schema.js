@@ -18,8 +18,8 @@ exports.CreatePortfolioSchema = zod_1.z.object({
     featured: zod_1.z.boolean().optional().default(false),
     isPublished: zod_1.z.boolean().optional().default(true),
     images: zod_1.z.array(exports.PortfolioImageSchema).optional().default([]),
-    tagIds: zod_1.z.array(zod_1.z.string().uuid()).optional().default([]),
-    techIds: zod_1.z.array(zod_1.z.string().uuid()).optional().default([]),
+    tagIds: zod_1.z.array(zod_1.z.string().min(1)).min(1, 'Minimal 1 tag'),
+    techIds: zod_1.z.array(zod_1.z.string().min(1)).min(1, 'Minimal 1 tech'),
 });
 exports.UpdatePortfolioSchema = exports.CreatePortfolioSchema.partial().extend({
     id: zod_1.z.string().uuid(),

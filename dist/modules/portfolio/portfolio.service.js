@@ -52,20 +52,41 @@ class PortfolioService {
                     });
                 }
                 if ((_b = data.tagIds) === null || _b === void 0 ? void 0 : _b.length) {
-                    yield tx.portfolioTagOnPortfolio.createMany({
-                        data: data.tagIds.map((tagId) => ({
-                            portfolioId: portfolio.id,
-                            tagId,
-                        })),
-                    });
+                    const tags = data.tagIds.map((tag) => ({
+                        name: tag,
+                        slug: tag.toLowerCase().replace(/\s+/g, '-'),
+                    }));
+                    for (const tag of tags) {
+                        const existingTag = yield tx.portfolioTag.upsert({
+                            where: { slug: tag.slug },
+                            update: {},
+                            create: tag,
+                        });
+                        yield tx.portfolioTagOnPortfolio.create({
+                            data: {
+                                portfolioId: portfolio.id,
+                                tagId: existingTag.id,
+                            },
+                        });
+                    }
                 }
                 if ((_c = data.techIds) === null || _c === void 0 ? void 0 : _c.length) {
-                    yield tx.techStackOnPortfolio.createMany({
-                        data: data.techIds.map((techId) => ({
-                            portfolioId: portfolio.id,
-                            techId,
-                        })),
-                    });
+                    const techs = data.techIds.map((tech) => ({
+                        name: tech,
+                    }));
+                    for (const tech of techs) {
+                        const existingTech = yield tx.techStack.upsert({
+                            where: { name: tech.name },
+                            update: {},
+                            create: tech,
+                        });
+                        yield tx.techStackOnPortfolio.create({
+                            data: {
+                                portfolioId: portfolio.id,
+                                techId: existingTech.id,
+                            },
+                        });
+                    }
                 }
                 return portfolio;
             }));
@@ -148,6 +169,7 @@ class PortfolioService {
     update(data) {
         return __awaiter(this, void 0, void 0, function* () {
             return database_1.db.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
                 const updated = yield tx.portfolio.update({
                     where: { id: data.id },
                     data: {
@@ -180,28 +202,49 @@ class PortfolioService {
                     });
                 }
                 // Reset tags
-                if (data.tagIds) {
+                if ((_a = data.tagIds) === null || _a === void 0 ? void 0 : _a.length) {
                     yield tx.portfolioTagOnPortfolio.deleteMany({
                         where: { portfolioId: data.id },
                     });
-                    yield tx.portfolioTagOnPortfolio.createMany({
-                        data: data.tagIds.map((tagId) => ({
-                            portfolioId: data.id,
-                            tagId,
-                        })),
-                    });
+                    const tags = data.tagIds.map((tag) => ({
+                        name: tag,
+                        slug: tag.toLowerCase().replace(/\s+/g, '-'),
+                    }));
+                    for (const tag of tags) {
+                        const existingTag = yield tx.portfolioTag.upsert({
+                            where: { slug: tag.slug },
+                            update: {},
+                            create: tag,
+                        });
+                        yield tx.portfolioTagOnPortfolio.create({
+                            data: {
+                                portfolioId: updated.id,
+                                tagId: existingTag.id,
+                            },
+                        });
+                    }
                 }
                 // Reset tech stacks
                 if (data.techIds) {
                     yield tx.techStackOnPortfolio.deleteMany({
                         where: { portfolioId: data.id },
                     });
-                    yield tx.techStackOnPortfolio.createMany({
-                        data: data.techIds.map((techId) => ({
-                            portfolioId: data.id,
-                            techId,
-                        })),
-                    });
+                    const techs = data.techIds.map((tech) => ({
+                        name: tech,
+                    }));
+                    for (const tech of techs) {
+                        const existingTech = yield tx.techStack.upsert({
+                            where: { name: tech.name },
+                            update: {},
+                            create: tech,
+                        });
+                        yield tx.techStackOnPortfolio.create({
+                            data: {
+                                portfolioId: updated.id,
+                                techId: existingTech.id,
+                            },
+                        });
+                    }
                 }
                 return updated;
             }));
