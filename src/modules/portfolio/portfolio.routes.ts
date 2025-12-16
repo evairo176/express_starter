@@ -95,7 +95,7 @@ portfolioRoutes.post('/', authenticateJWT, portfolioController.create);
  *       200:
  *         description: List of portfolios
  */
-portfolioRoutes.get('/', authenticateJWT, portfolioController.findAll);
+portfolioRoutes.get('/', portfolioController.findAll);
 
 /**
  * @swagger

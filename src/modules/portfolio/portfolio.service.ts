@@ -8,88 +8,83 @@ import { db } from '../../database/database';
 
 export class PortfolioService {
   public async create(data: CreatePortfolioDTO) {
-    const portfolio = await db.portfolio.findFirst({
-      where: {
-        slug: data?.slug,
-      },
+    // 1️⃣ Fail fast: cek slug
+    const existing = await db.portfolio.findFirst({
+      where: { slug: data.slug },
     });
 
-    if (portfolio) {
+    if (existing) {
       throw new BadRequestException(
-        `${portfolio?.slug} - ${portfolio.title} slug already`,
+        `${existing.slug} - ${existing.title} slug already`,
         ErrorCode.SLUG_ALREADY_EXISTS,
       );
     }
 
-    return db.$transaction(async (tx) => {
-      const portfolio = await tx.portfolio.create({
-        data: {
-          title: data.title,
-          slug: data.slug,
-          description: data.description,
-          shortDesc: data.shortDesc,
-          categoryId: data.categoryId,
-          liveUrl: data.liveUrl,
-          repoUrl: data.repoUrl,
-          featured: data.featured,
-          isPublished: data.isPublished,
-        },
-      });
-
-      if (data.images?.length) {
-        await tx.portfolioImage.createMany({
-          data: data.images.map((i) => ({
-            portfolioId: portfolio.id,
-            url: i.url,
-            alt: i.alt,
-            position: i.position ?? 0,
-          })),
-        });
-      }
-
-      if (data.tagIds?.length) {
-        const tags = data.tagIds.map((tag) => ({
-          name: tag,
-          slug: tag.toLowerCase().replace(/\s+/g, '-'),
-        }));
-        for (const tag of tags) {
-          const existingTag = await tx.portfolioTag.upsert({
-            where: { slug: tag.slug },
-            update: {},
-            create: tag,
-          });
-
-          await tx.portfolioTagOnPortfolio.create({
-            data: {
-              portfolioId: portfolio.id,
-              tagId: existingTag.id,
-            },
-          });
-        }
-      }
-
-      if (data.techIds?.length) {
-        const techs = data.techIds.map((tech) => ({
-          name: tech,
-        }));
-        for (const tech of techs) {
-          const existingTech = await tx.techStack.upsert({
-            where: { name: tech.name },
-            update: {},
-            create: tech,
-          });
-
-          await tx.techStackOnPortfolio.create({
-            data: {
-              portfolioId: portfolio.id,
-              techId: existingTech.id,
-            },
-          });
-        }
-      }
-
-      return portfolio;
+    // 2️⃣ TRANSACTION RINGAN (inti saja)
+    const portfolio = await db.portfolio.create({
+      data: {
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        shortDesc: data.shortDesc,
+        categoryId: data.categoryId,
+        liveUrl: data.liveUrl,
+        repoUrl: data.repoUrl,
+        featured: data.featured,
+        isPublished: data.isPublished,
+      },
     });
+
+    // 3️⃣ RELASI BERAT (DI LUAR TRANSACTION)
+    await Promise.all([
+      data.images?.length
+        ? this.syncImages(portfolio.id, data.images)
+        : Promise.resolve(),
+
+      data.tagIds?.length
+        ? this.syncTags(portfolio.id, data.tagIds)
+        : Promise.resolve(),
+
+      data.techIds?.length
+        ? this.syncTechs(portfolio.id, data.techIds)
+        : Promise.resolve(),
+    ]);
+
+    return portfolio;
+  }
+  public async update(data: UpdatePortfolioDTO) {
+    // 1️⃣ TRANSACTION RINGAN (update inti)
+    const updated = await db.portfolio.update({
+      where: { id: data.id },
+      data: {
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        shortDesc: data.shortDesc,
+        categoryId: data.categoryId,
+        isPublished: data.isPublished,
+        featured: data.featured,
+        liveUrl: data.liveUrl,
+        repoUrl: data.repoUrl,
+      },
+    });
+
+    // 2️⃣ RELASI BERAT (DI LUAR TRANSACTION)
+    await Promise.all([
+      data.images?.length
+        ? this.resetImages(updated.id, data.images)
+        : Promise.resolve(),
+
+      data.tagIds?.length
+        ? this.resetTags(updated.id, data.tagIds)
+        : Promise.resolve(),
+
+      data.techIds?.length
+        ? this.resetTechs(updated.id, data.techIds)
+        : Promise.resolve(),
+    ]);
+
+    return updated;
   }
 
   public async findAll({
@@ -184,94 +179,84 @@ export class PortfolioService {
     });
   }
 
-  public async update(data: UpdatePortfolioDTO) {
-    return db.$transaction(async (tx) => {
-      const updated = await tx.portfolio.update({
-        where: { id: data.id },
-        data: {
-          title: data.title,
-          slug: data.slug,
-          description: data.description,
-          shortDesc: data.shortDesc,
-          categoryId: data.categoryId,
-          isPublished: data.isPublished,
-          featured: data.featured,
-          liveUrl: data.liveUrl,
-          repoUrl: data.repoUrl,
-        },
-      });
-
-      // Reset images
-      if (data.images) {
-        await tx.portfolioImage.deleteMany({
-          where: { portfolioId: data.id },
-        });
-
-        await tx.portfolioImage.createMany({
-          data: data.images.map((i) => ({
-            portfolioId: data.id,
-            url: i.url,
-            alt: i.alt,
-            position: i.position ?? 0,
-          })),
-        });
-      }
-
-      // Reset tags
-      if (data.tagIds?.length) {
-        await tx.portfolioTagOnPortfolio.deleteMany({
-          where: { portfolioId: data.id },
-        });
-        const tags = data.tagIds.map((tag) => ({
-          name: tag,
-          slug: tag.toLowerCase().replace(/\s+/g, '-'),
-        }));
-        for (const tag of tags) {
-          const existingTag = await tx.portfolioTag.upsert({
-            where: { slug: tag.slug },
-            update: {},
-            create: tag,
-          });
-
-          await tx.portfolioTagOnPortfolio.create({
-            data: {
-              portfolioId: updated.id,
-              tagId: existingTag.id,
-            },
-          });
-        }
-      }
-
-      // Reset tech stacks
-      if (data.techIds) {
-        await tx.techStackOnPortfolio.deleteMany({
-          where: { portfolioId: data.id },
-        });
-        const techs = data.techIds.map((tech) => ({
-          name: tech,
-        }));
-        for (const tech of techs) {
-          const existingTech = await tx.techStack.upsert({
-            where: { name: tech.name },
-            update: {},
-            create: tech,
-          });
-
-          await tx.techStackOnPortfolio.create({
-            data: {
-              portfolioId: updated.id,
-              techId: existingTech.id,
-            },
-          });
-        }
-      }
-
-      return updated;
-    });
-  }
   public async delete(id: string) {
     return db.portfolio.delete({
       where: { id },
     });
+  }
+
+  private async syncImages(
+    portfolioId: string,
+    images: { url: string; alt?: string; position?: number }[],
+  ) {
+    await db.portfolioImage.createMany({
+      data: images.map((img) => ({
+        portfolioId,
+        url: img.url,
+        alt: img.alt,
+        position: img.position ?? 0,
+      })),
+    });
+  }
+
+  private async resetImages(
+    portfolioId: string,
+    images: { url: string; alt: string; position?: number }[],
+  ) {
+    await db.portfolioImage.deleteMany({ where: { portfolioId } });
+    await this.syncImages(portfolioId, images);
+  }
+
+  private async syncTags(portfolioId: string, tags: string[]) {
+    const records = await Promise.all(
+      tags.map((name) => {
+        const slug = name.toLowerCase().replace(/\s+/g, '-');
+        return db.portfolioTag.upsert({
+          where: { slug },
+          update: {},
+          create: { name, slug },
+        });
+      }),
+    );
+
+    await db.portfolioTagOnPortfolio.createMany({
+      data: records.map((tag) => ({
+        portfolioId,
+        tagId: tag.id,
+      })),
+    });
+  }
+
+  private async resetTags(portfolioId: string, tags: string[]) {
+    await db.portfolioTagOnPortfolio.deleteMany({
+      where: { portfolioId },
+    });
+    await this.syncTags(portfolioId, tags);
+  }
+
+  private async syncTechs(portfolioId: string, techs: string[]) {
+    const records = await Promise.all(
+      techs.map((name) =>
+        db.techStack.upsert({
+          where: { name },
+          update: {},
+          create: { name },
+        }),
+      ),
+    );
+
+    await db.techStackOnPortfolio.createMany({
+      data: records.map((tech) => ({
+        portfolioId,
+        techId: tech.id,
+      })),
+    });
+  }
+
+  private async resetTechs(portfolioId: string, techs: string[]) {
+    await db.techStackOnPortfolio.deleteMany({
+      where: { portfolioId },
+    });
+    await this.syncTechs(portfolioId, techs);
   }
 }

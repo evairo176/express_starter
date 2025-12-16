@@ -15,81 +15,74 @@ const database_1 = require("../../database/database");
 class PortfolioService {
     create(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            const portfolio = yield database_1.db.portfolio.findFirst({
-                where: {
-                    slug: data === null || data === void 0 ? void 0 : data.slug,
+            var _a, _b, _c;
+            // 1️⃣ Fail fast: cek slug
+            const existing = yield database_1.db.portfolio.findFirst({
+                where: { slug: data.slug },
+            });
+            if (existing) {
+                throw new catch_errors_1.BadRequestException(`${existing.slug} - ${existing.title} slug already`, "SLUG_ALREADY_EXISTS" /* ErrorCode.SLUG_ALREADY_EXISTS */);
+            }
+            // 2️⃣ TRANSACTION RINGAN (inti saja)
+            const portfolio = yield database_1.db.portfolio.create({
+                data: {
+                    title: data.title,
+                    slug: data.slug,
+                    description: data.description,
+                    shortDesc: data.shortDesc,
+                    categoryId: data.categoryId,
+                    liveUrl: data.liveUrl,
+                    repoUrl: data.repoUrl,
+                    featured: data.featured,
+                    isPublished: data.isPublished,
                 },
             });
-            if (portfolio) {
-                throw new catch_errors_1.BadRequestException(`${portfolio === null || portfolio === void 0 ? void 0 : portfolio.slug} - ${portfolio.title} slug already`, "SLUG_ALREADY_EXISTS" /* ErrorCode.SLUG_ALREADY_EXISTS */);
-            }
-            return database_1.db.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                var _a, _b, _c;
-                const portfolio = yield tx.portfolio.create({
-                    data: {
-                        title: data.title,
-                        slug: data.slug,
-                        description: data.description,
-                        shortDesc: data.shortDesc,
-                        categoryId: data.categoryId,
-                        liveUrl: data.liveUrl,
-                        repoUrl: data.repoUrl,
-                        featured: data.featured,
-                        isPublished: data.isPublished,
-                    },
-                });
-                if ((_a = data.images) === null || _a === void 0 ? void 0 : _a.length) {
-                    yield tx.portfolioImage.createMany({
-                        data: data.images.map((i) => {
-                            var _a;
-                            return ({
-                                portfolioId: portfolio.id,
-                                url: i.url,
-                                alt: i.alt,
-                                position: (_a = i.position) !== null && _a !== void 0 ? _a : 0,
-                            });
-                        }),
-                    });
-                }
-                if ((_b = data.tagIds) === null || _b === void 0 ? void 0 : _b.length) {
-                    const tags = data.tagIds.map((tag) => ({
-                        name: tag,
-                        slug: tag.toLowerCase().replace(/\s+/g, '-'),
-                    }));
-                    for (const tag of tags) {
-                        const existingTag = yield tx.portfolioTag.upsert({
-                            where: { slug: tag.slug },
-                            update: {},
-                            create: tag,
-                        });
-                        yield tx.portfolioTagOnPortfolio.create({
-                            data: {
-                                portfolioId: portfolio.id,
-                                tagId: existingTag.id,
-                            },
-                        });
-                    }
-                }
-                if ((_c = data.techIds) === null || _c === void 0 ? void 0 : _c.length) {
-                    const techs = data.techIds.map((tech) => ({
-                        name: tech,
-                    }));
-                    for (const tech of techs) {
-                        const existingTech = yield tx.techStack.upsert({
-                            where: { name: tech.name },
-                            update: {},
-                            create: tech,
-                        });
-                        yield tx.techStackOnPortfolio.create({
-                            data: {
-                                portfolioId: portfolio.id,
-                                techId: existingTech.id,
-                            },
-                        });
-                    }
-                }
-                return portfolio;
-            }));
+            // 3️⃣ RELASI BERAT (DI LUAR TRANSACTION)
+            yield Promise.all([
+                ((_a = data.images) === null || _a === void 0 ? void 0 : _a.length)
+                    ? this.syncImages(portfolio.id, data.images)
+                    : Promise.resolve(),
+                ((_b = data.tagIds) === null || _b === void 0 ? void 0 : _b.length)
+                    ? this.syncTags(portfolio.id, data.tagIds)
+                    : Promise.resolve(),
+                ((_c = data.techIds) === null || _c === void 0 ? void 0 : _c.length)
+                    ? this.syncTechs(portfolio.id, data.techIds)
+                    : Promise.resolve(),
+            ]);
+            return portfolio;
+        });
+    }
+    update(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            // 1️⃣ TRANSACTION RINGAN (update inti)
+            const updated = yield database_1.db.portfolio.update({
+                where: { id: data.id },
+                data: {
+                    title: data.title,
+                    slug: data.slug,
+                    description: data.description,
+                    shortDesc: data.shortDesc,
+                    categoryId: data.categoryId,
+                    isPublished: data.isPublished,
+                    featured: data.featured,
+                    liveUrl: data.liveUrl,
+                    repoUrl: data.repoUrl,
+                },
+            });
+            // 2️⃣ RELASI BERAT (DI LUAR TRANSACTION)
+            yield Promise.all([
+                ((_a = data.images) === null || _a === void 0 ? void 0 : _a.length)
+                    ? this.resetImages(updated.id, data.images)
+                    : Promise.resolve(),
+                ((_b = data.tagIds) === null || _b === void 0 ? void 0 : _b.length)
+                    ? this.resetTags(updated.id, data.tagIds)
+                    : Promise.resolve(),
+                ((_c = data.techIds) === null || _c === void 0 ? void 0 : _c.length)
+                    ? this.resetTechs(updated.id, data.techIds)
+                    : Promise.resolve(),
+            ]);
+            return updated;
         });
     }
     findAll(_a) {
@@ -166,95 +159,81 @@ class PortfolioService {
             });
         });
     }
-    update(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                const updated = yield tx.portfolio.update({
-                    where: { id: data.id },
-                    data: {
-                        title: data.title,
-                        slug: data.slug,
-                        description: data.description,
-                        shortDesc: data.shortDesc,
-                        categoryId: data.categoryId,
-                        isPublished: data.isPublished,
-                        featured: data.featured,
-                        liveUrl: data.liveUrl,
-                        repoUrl: data.repoUrl,
-                    },
-                });
-                // Reset images
-                if (data.images) {
-                    yield tx.portfolioImage.deleteMany({
-                        where: { portfolioId: data.id },
-                    });
-                    yield tx.portfolioImage.createMany({
-                        data: data.images.map((i) => {
-                            var _a;
-                            return ({
-                                portfolioId: data.id,
-                                url: i.url,
-                                alt: i.alt,
-                                position: (_a = i.position) !== null && _a !== void 0 ? _a : 0,
-                            });
-                        }),
-                    });
-                }
-                // Reset tags
-                if ((_a = data.tagIds) === null || _a === void 0 ? void 0 : _a.length) {
-                    yield tx.portfolioTagOnPortfolio.deleteMany({
-                        where: { portfolioId: data.id },
-                    });
-                    const tags = data.tagIds.map((tag) => ({
-                        name: tag,
-                        slug: tag.toLowerCase().replace(/\s+/g, '-'),
-                    }));
-                    for (const tag of tags) {
-                        const existingTag = yield tx.portfolioTag.upsert({
-                            where: { slug: tag.slug },
-                            update: {},
-                            create: tag,
-                        });
-                        yield tx.portfolioTagOnPortfolio.create({
-                            data: {
-                                portfolioId: updated.id,
-                                tagId: existingTag.id,
-                            },
-                        });
-                    }
-                }
-                // Reset tech stacks
-                if (data.techIds) {
-                    yield tx.techStackOnPortfolio.deleteMany({
-                        where: { portfolioId: data.id },
-                    });
-                    const techs = data.techIds.map((tech) => ({
-                        name: tech,
-                    }));
-                    for (const tech of techs) {
-                        const existingTech = yield tx.techStack.upsert({
-                            where: { name: tech.name },
-                            update: {},
-                            create: tech,
-                        });
-                        yield tx.techStackOnPortfolio.create({
-                            data: {
-                                portfolioId: updated.id,
-                                techId: existingTech.id,
-                            },
-                        });
-                    }
-                }
-                return updated;
-            }));
-        });
-    }
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return database_1.db.portfolio.delete({
                 where: { id },
             });
+        });
+    }
+    syncImages(portfolioId, images) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield database_1.db.portfolioImage.createMany({
+                data: images.map((img) => {
+                    var _a;
+                    return ({
+                        portfolioId,
+                        url: img.url,
+                        alt: img.alt,
+                        position: (_a = img.position) !== null && _a !== void 0 ? _a : 0,
+                    });
+                }),
+            });
+        });
+    }
+    resetImages(portfolioId, images) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield database_1.db.portfolioImage.deleteMany({ where: { portfolioId } });
+            yield this.syncImages(portfolioId, images);
+        });
+    }
+    syncTags(portfolioId, tags) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const records = yield Promise.all(tags.map((name) => {
+                const slug = name.toLowerCase().replace(/\s+/g, '-');
+                return database_1.db.portfolioTag.upsert({
+                    where: { slug },
+                    update: {},
+                    create: { name, slug },
+                });
+            }));
+            yield database_1.db.portfolioTagOnPortfolio.createMany({
+                data: records.map((tag) => ({
+                    portfolioId,
+                    tagId: tag.id,
+                })),
+            });
+        });
+    }
+    resetTags(portfolioId, tags) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield database_1.db.portfolioTagOnPortfolio.deleteMany({
+                where: { portfolioId },
+            });
+            yield this.syncTags(portfolioId, tags);
+        });
+    }
+    syncTechs(portfolioId, techs) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const records = yield Promise.all(techs.map((name) => database_1.db.techStack.upsert({
+                where: { name },
+                update: {},
+                create: { name },
+            })));
+            yield database_1.db.techStackOnPortfolio.createMany({
+                data: records.map((tech) => ({
+                    portfolioId,
+                    techId: tech.id,
+                })),
+            });
+        });
+    }
+    resetTechs(portfolioId, techs) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield database_1.db.techStackOnPortfolio.deleteMany({
+                where: { portfolioId },
+            });
+            yield this.syncTechs(portfolioId, techs);
         });
     }
 }

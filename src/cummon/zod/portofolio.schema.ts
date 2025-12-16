@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const PortfolioImageSchema = z.object({
   url: z.string().url(),
-  alt: z.string().optional().nullable(),
+  alt: z.string(),
   position: z.number().optional(),
 });
 

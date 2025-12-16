@@ -95,7 +95,7 @@ portfolioRoutes.post('/', jwt_strategy_1.authenticateJWT, portfolio_module_1.por
  *       200:
  *         description: List of portfolios
  */
-portfolioRoutes.get('/', jwt_strategy_1.authenticateJWT, portfolio_module_1.portfolioController.findAll);
+portfolioRoutes.get('/', portfolio_module_1.portfolioController.findAll);
 /**
  * @swagger
  * /portfolio/{id}:

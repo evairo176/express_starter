@@ -4,7 +4,7 @@ exports.UpdatePortfolioSchema = exports.CreatePortfolioSchema = exports.Portfoli
 const zod_1 = require("zod");
 exports.PortfolioImageSchema = zod_1.z.object({
     url: zod_1.z.string().url(),
-    alt: zod_1.z.string().optional().nullable(),
+    alt: zod_1.z.string(),
     position: zod_1.z.number().optional(),
 });
 exports.CreatePortfolioSchema = zod_1.z.object({
