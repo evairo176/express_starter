@@ -21,8 +21,8 @@ export const CreatePortfolioSchema = z.object({
   isPublished: z.boolean().optional().default(true),
 
   images: z.array(PortfolioImageSchema).optional().default([]),
-  tagIds: z.array(z.string().uuid()).optional().default([]),
-  techIds: z.array(z.string().uuid()).optional().default([]),
+  tagIds: z.array(z.string().min(1)).min(1, 'Minimal 1 tag'),
+  techIds: z.array(z.string().min(1)).min(1, 'Minimal 1 tech'),
 });
 
 export const UpdatePortfolioSchema = CreatePortfolioSchema.partial().extend({

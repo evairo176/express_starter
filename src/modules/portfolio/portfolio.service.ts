@@ -48,21 +48,44 @@ export class PortfolioService {
       }
 
       if (data.tagIds?.length) {
-        await tx.portfolioTagOnPortfolio.createMany({
-          data: data.tagIds.map((tagId) => ({
-            portfolioId: portfolio.id,
-            tagId,
-          })),
-        });
+        const tags = data.tagIds.map((tag) => ({
+          name: tag,
+          slug: tag.toLowerCase().replace(/\s+/g, '-'),
+        }));
+        for (const tag of tags) {
+          const existingTag = await tx.portfolioTag.upsert({
+            where: { slug: tag.slug },
+            update: {},
+            create: tag,
+          });
+
+          await tx.portfolioTagOnPortfolio.create({
+            data: {
+              portfolioId: portfolio.id,
+              tagId: existingTag.id,
+            },
+          });
+        }
       }
 
       if (data.techIds?.length) {
-        await tx.techStackOnPortfolio.createMany({
-          data: data.techIds.map((techId) => ({
-            portfolioId: portfolio.id,
-            techId,
-          })),
-        });
+        const techs = data.techIds.map((tech) => ({
+          name: tech,
+        }));
+        for (const tech of techs) {
+          const existingTech = await tx.techStack.upsert({
+            where: { name: tech.name },
+            update: {},
+            create: tech,
+          });
+
+          await tx.techStackOnPortfolio.create({
+            data: {
+              portfolioId: portfolio.id,
+              techId: existingTech.id,
+            },
+          });
+        }
       }
 
       return portfolio;
@@ -195,17 +218,28 @@ export class PortfolioService {
       }
 
       // Reset tags
-      if (data.tagIds) {
+      if (data.tagIds?.length) {
         await tx.portfolioTagOnPortfolio.deleteMany({
           where: { portfolioId: data.id },
         });
+        const tags = data.tagIds.map((tag) => ({
+          name: tag,
+          slug: tag.toLowerCase().replace(/\s+/g, '-'),
+        }));
+        for (const tag of tags) {
+          const existingTag = await tx.portfolioTag.upsert({
+            where: { slug: tag.slug },
+            update: {},
+            create: tag,
+          });
 
-        await tx.portfolioTagOnPortfolio.createMany({
-          data: data.tagIds.map((tagId) => ({
-            portfolioId: data.id,
-            tagId,
-          })),
-        });
+          await tx.portfolioTagOnPortfolio.create({
+            data: {
+              portfolioId: updated.id,
+              tagId: existingTag.id,
+            },
+          });
+        }
       }
 
       // Reset tech stacks
@@ -213,13 +247,23 @@ export class PortfolioService {
         await tx.techStackOnPortfolio.deleteMany({
           where: { portfolioId: data.id },
         });
+        const techs = data.techIds.map((tech) => ({
+          name: tech,
+        }));
+        for (const tech of techs) {
+          const existingTech = await tx.techStack.upsert({
+            where: { name: tech.name },
+            update: {},
+            create: tech,
+          });
 
-        await tx.techStackOnPortfolio.createMany({
-          data: data.techIds.map((techId) => ({
-            portfolioId: data.id,
-            techId,
-          })),
-        });
+          await tx.techStackOnPortfolio.create({
+            data: {
+              portfolioId: updated.id,
+              techId: existingTech.id,
+            },
+          });
+        }
       }
 
       return updated;

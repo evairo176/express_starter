@@ -18,6 +18,7 @@ import portfolioTagRoutes from './modules/portfolioTag/portfolioTag.routes';
 import techStackRoutes from './modules/techStack/techStack.routes';
 import imageRoutes from './modules/image/image.routes';
 import portfolioRoutes from './modules/portfolio/portfolio.routes';
+import dashboardRoutes from './modules/dashboard/dashboard.routes';
 // import { seedRoles } from './libs/seed';
 
 const app = express();
@@ -56,6 +57,7 @@ app.use(`${BASE_PATH}/portfolio-category`, portfolioCategoryRoutes);
 app.use(`${BASE_PATH}/portfolio-tag`, portfolioTagRoutes);
 app.use(`${BASE_PATH}/tech-stack`, techStackRoutes);
 app.use(`${BASE_PATH}/image`, imageRoutes);
+app.use(`${BASE_PATH}/dashboard`, dashboardRoutes);
 
 // app.use('/api/auth', authRouter);
 
