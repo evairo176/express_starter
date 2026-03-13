@@ -1,7 +1,7 @@
 import { db as prisma } from '../../database/database';
 
 export class DashboardService {
-  static async getAnalytics() {
+  public async getAnalytics() {
     // 1. Top Tags
     const topTags = await prisma.portfolioTag.findMany({
       include: {
@@ -65,6 +65,52 @@ export class DashboardService {
       })),
     };
   }
-}
 
-export const dashboardService = new DashboardService();
+  public async getTicketSummary() {
+    const total = await prisma.ticket.count();
+
+    const done = await prisma.ticket.count({
+      where: { status: 'DONE' },
+    });
+
+    const pending = await prisma.ticket.count({
+      where: { status: { not: 'DONE' } },
+    });
+
+    const over48 = await prisma.ticket.count({
+      where: {
+        createdAt: {
+          lt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+        },
+        status: { not: 'DONE' },
+      },
+    });
+
+    return {
+      total,
+      done,
+      pending,
+      over48,
+    };
+  }
+
+  // public async getCategoryStats() {
+  //   return prisma.ticket.groupBy({
+  //     by: ['category'],
+  //     _count: true,
+  //   });
+  // }
+
+  public async getPicPerformance() {
+    return prisma.ticket.groupBy({
+      by: ['picId'],
+      where: {
+        status: 'DONE',
+      },
+      _sum: {
+        durationMin: true,
+      },
+      _count: true,
+    });
+  }
+}

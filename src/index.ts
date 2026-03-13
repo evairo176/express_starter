@@ -19,6 +19,8 @@ import techStackRoutes from './modules/techStack/techStack.routes';
 import imageRoutes from './modules/image/image.routes';
 import portfolioRoutes from './modules/portfolio/portfolio.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
+import ticketRoutes from './modules/ticket/ticket.routes';
+import bookingRoutes from './modules/booking/booking.routes';
 // import { seedRoles } from './libs/seed';
 
 const app = express();
@@ -58,6 +60,8 @@ app.use(`${BASE_PATH}/portfolio-tag`, portfolioTagRoutes);
 app.use(`${BASE_PATH}/tech-stack`, techStackRoutes);
 app.use(`${BASE_PATH}/image`, imageRoutes);
 app.use(`${BASE_PATH}/dashboard`, dashboardRoutes);
+app.use(`${BASE_PATH}/tickets`, ticketRoutes);
+app.use(`${BASE_PATH}/booking`, bookingRoutes);
 
 // app.use('/api/auth', authRouter);
 

@@ -9,10 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dashboardService = exports.DashboardService = void 0;
+exports.DashboardService = void 0;
 const database_1 = require("../../database/database");
 class DashboardService {
-    static getAnalytics() {
+    getAnalytics() {
         return __awaiter(this, void 0, void 0, function* () {
             // 1. Top Tags
             const topTags = yield database_1.db.portfolioTag.findMany({
@@ -75,6 +75,50 @@ class DashboardService {
             };
         });
     }
+    getTicketSummary() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const total = yield database_1.db.ticket.count();
+            const done = yield database_1.db.ticket.count({
+                where: { status: 'DONE' },
+            });
+            const pending = yield database_1.db.ticket.count({
+                where: { status: { not: 'DONE' } },
+            });
+            const over48 = yield database_1.db.ticket.count({
+                where: {
+                    createdAt: {
+                        lt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+                    },
+                    status: { not: 'DONE' },
+                },
+            });
+            return {
+                total,
+                done,
+                pending,
+                over48,
+            };
+        });
+    }
+    // public async getCategoryStats() {
+    //   return prisma.ticket.groupBy({
+    //     by: ['category'],
+    //     _count: true,
+    //   });
+    // }
+    getPicPerformance() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.db.ticket.groupBy({
+                by: ['picId'],
+                where: {
+                    status: 'DONE',
+                },
+                _sum: {
+                    durationMin: true,
+                },
+                _count: true,
+            });
+        });
+    }
 }
 exports.DashboardService = DashboardService;
-exports.dashboardService = new DashboardService();

@@ -3,9 +3,14 @@ import { DashboardService } from './dashboard.service';
 import { asyncHandler } from '../../middlewares';
 
 export class DashboardController {
-  static getAnalytics = asyncHandler(
+  private dashboardService: DashboardService;
+
+  constructor(dashboardService: DashboardService) {
+    this.dashboardService = dashboardService;
+  }
+  public getAnalytics = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const data = await DashboardService.getAnalytics();
+      const data = await this.dashboardService.getAnalytics();
       res.status(200).json({
         status: 'success',
         data,
@@ -13,5 +18,3 @@ export class DashboardController {
     },
   );
 }
-
-export const dashboardController = new DashboardController();

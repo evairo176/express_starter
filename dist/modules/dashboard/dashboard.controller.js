@@ -8,20 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dashboardController = exports.DashboardController = void 0;
-const dashboard_service_1 = require("./dashboard.service");
+exports.DashboardController = void 0;
 const middlewares_1 = require("../../middlewares");
 class DashboardController {
+    constructor(dashboardService) {
+        this.getAnalytics = (0, middlewares_1.asyncHandler)((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.dashboardService.getAnalytics();
+            res.status(200).json({
+                status: 'success',
+                data,
+            });
+        }));
+        this.dashboardService = dashboardService;
+    }
 }
 exports.DashboardController = DashboardController;
-_a = DashboardController;
-DashboardController.getAnalytics = (0, middlewares_1.asyncHandler)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield dashboard_service_1.DashboardService.getAnalytics();
-    res.status(200).json({
-        status: 'success',
-        data,
-    });
-}));
-exports.dashboardController = new DashboardController();

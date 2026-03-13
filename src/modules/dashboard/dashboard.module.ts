@@ -1,7 +1,7 @@
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
-export const dashboardModule = {
-  controller: DashboardController,
-  service: DashboardService,
-};
+const dashboardService = new DashboardService();
+const dashboardController = new DashboardController(dashboardService);
+
+export { dashboardService, dashboardController };

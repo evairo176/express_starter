@@ -14,6 +14,9 @@
     "add-build": "git add dist",
     "postinstall": "npx prisma generate"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "pre-commit": [
     "build",
     "add-build"

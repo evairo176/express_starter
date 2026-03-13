@@ -26,11 +26,15 @@ model User {
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  role      String   @default("user")
 
   // relation
   userPreferences   UserPreferences?
   sessions          Session[]
   verificationCodes VerificationCode[] // Relasi 1:N
+
+  bookings Booking[] 
+  assignedTickets Ticket[] @relation("AssignedTickets")
 }
 
 
@@ -186,4 +190,102 @@ model Image {
   provider         String    @default("cloudinary")
   tags             String[]  @default([])
   createdAt        DateTime  @default(now())
+}
+
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TicketCategory {
+  SOFTWARE
+  LAPTOP
+  PRINTER
+  NETWORK
+}
+
+enum RequestType {
+  SOFTWARE
+  LAPTOP
+  PRINTER
+  NETWORK
+  DOXA_REVISION
+  OTHER
+}
+enum DoxaReason {
+  CUSTOMER_REQUEST
+  MARKETING_REQUEST
+  SUPPLIER_REQUEST
+  DOXA_ERROR
+  REJECTION
+  PO_TOLERANCE
+  HUMAN_ERROR
+  OTHER
+}
+
+model Ticket {
+  id          String   @id @default(uuid()) @db.Uuid
+
+  title       String
+  description String?
+
+  requestType RequestType
+
+  doxaReason  DoxaReason[]
+
+  status      TicketStatus @default(OPEN)
+
+  createdAt   DateTime @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  durationMin Int?
+
+  picId       String?  @db.Uuid
+  pic         User?    @relation("AssignedTickets", fields: [picId], references: [id])
+
+  bookingId   String   @unique @db.Uuid
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+
+  activities  TicketActivity[]
+}
+model TicketActivity {
+  id        String   @id @default(uuid()) @db.Uuid
+
+  ticketId  String   @db.Uuid
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  action    String
+  note      String?
+
+  createdAt DateTime @default(now())
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  DONE
+  CANCELLED
+}
+
+model Booking {
+  id        String   @id @default(uuid()) @db.Uuid
+
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id])
+
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+
+  status    BookingStatus @default(PENDING)
+
+  ticket    Ticket?
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, startTime])
 }
