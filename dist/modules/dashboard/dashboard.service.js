@@ -100,24 +100,58 @@ class DashboardService {
             };
         });
     }
-    // public async getCategoryStats() {
-    //   return prisma.ticket.groupBy({
-    //     by: ['category'],
-    //     _count: true,
-    //   });
-    // }
-    getPicPerformance() {
+    getCategoryStats() {
         return __awaiter(this, void 0, void 0, function* () {
             return database_1.db.ticket.groupBy({
-                by: ['picId'],
-                where: {
-                    status: 'DONE',
-                },
-                _sum: {
-                    durationMin: true,
-                },
+                by: ['requestType'],
                 _count: true,
             });
+        });
+    }
+    getPicPerformance() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const users = yield database_1.db.user.findMany({
+                where: {
+                    role: 'pic_it',
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    assignedTickets: {
+                        select: {
+                            status: true,
+                            durationMin: true,
+                            createdAt: true,
+                            finishedAt: true,
+                        },
+                    },
+                },
+            });
+            const result = users.map((user) => {
+                const tickets = user.assignedTickets;
+                const doneTickets = tickets.filter((t) => t.status === 'DONE');
+                const unfinishedTickets = tickets.filter((t) => t.status !== 'DONE');
+                const totalMinutes = doneTickets.reduce((acc, t) => acc + (t.durationMin || 0), 0);
+                const totalJobs = doneTickets.length;
+                const avgMinutesPerJob = totalJobs > 0 ? Math.round(totalMinutes / totalJobs) : 0;
+                const over48Hours = tickets.filter((t) => {
+                    var _a;
+                    if (!t.createdAt)
+                        return false;
+                    const end = (_a = t.finishedAt) !== null && _a !== void 0 ? _a : new Date();
+                    const diffHours = (end.getTime() - t.createdAt.getTime()) / (1000 * 60 * 60);
+                    return diffHours > 48;
+                }).length;
+                return {
+                    pic: user.name,
+                    totalJobs,
+                    totalMinutes,
+                    avgMinutesPerJob,
+                    over48Hours,
+                    unfinishedJobs: unfinishedTickets.length,
+                };
+            });
+            return result;
         });
     }
 }

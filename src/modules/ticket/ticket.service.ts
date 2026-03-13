@@ -6,16 +6,73 @@ export class TicketService {
       data,
     });
   }
-  public async getTickets() {
-    return prisma.ticket.findMany({
+  public async findAll({
+    page = 1,
+    limit = 10,
+    sortBy = 'updatedAt',
+    sortDir = 'desc',
+    search,
+  }: {
+    userId?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: 'updatedAt'; // sesuaikan field
+    sortDir?: 'asc' | 'desc';
+    search?: string;
+  }) {
+    const skip = (page - 1) * limit;
+
+    // Filter dasar
+    const where: any = {
+      // userId,
+      // expiredAt: {
+      //   gt: new Date(),
+      // },
+    };
+
+    // Opsional: search pada userAgent
+    if (search && search.trim() !== '') {
+      where.title = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    // Hitung total (without pagination)
+    const total = await prisma.ticket.count({
+      where,
+    });
+
+    // Query data
+    const tickets = await prisma.ticket.findMany({
+      where,
+      orderBy: {
+        createdAt: sortDir,
+      },
+      skip: Number(skip),
+      take: Number(limit),
       include: {
         pic: true,
         activities: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: tickets,
+      metadata: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+        sortBy,
+        sortDir,
+        search: search ?? null,
+      },
+    };
   }
   public async getTicketById(id: string) {
     return prisma.ticket.findUnique({
@@ -56,6 +113,21 @@ export class TicketService {
         status: 'DONE',
         finishedAt,
         durationMin: Math.round(duration),
+      },
+    });
+  }
+  public async getPic() {
+    return prisma.user.findMany({
+      where: {
+        role: 'pic_it',
+      },
+      select: {
+        name: true,
+        id: true,
+        role: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

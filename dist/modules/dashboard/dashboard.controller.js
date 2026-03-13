@@ -8,9 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DashboardController = void 0;
 const middlewares_1 = require("../../middlewares");
+const response_1 = __importDefault(require("../../cummon/utils/response"));
+const http_config_1 = require("../../config/http.config");
 class DashboardController {
     constructor(dashboardService) {
         this.getAnalytics = (0, middlewares_1.asyncHandler)((req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -19,6 +24,14 @@ class DashboardController {
                 status: 'success',
                 data,
             });
+        }));
+        this.getTicketSummary = (0, middlewares_1.asyncHandler)((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const [ticketSummary, categoryStats, picPerformance] = yield Promise.all([
+                this.dashboardService.getTicketSummary(),
+                this.dashboardService.getCategoryStats(),
+                this.dashboardService.getPicPerformance(),
+            ]);
+            return response_1.default.success(res, { ticketSummary, categoryStats, picPerformance }, `Get ticket summary successfully`, http_config_1.HTTPSTATUS.OK);
         }));
         this.dashboardService = dashboardService;
     }

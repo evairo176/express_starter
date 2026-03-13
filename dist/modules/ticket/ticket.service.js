@@ -19,17 +19,55 @@ class TicketService {
             });
         });
     }
-    getTickets() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.ticket.findMany({
+    findAll(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page = 1, limit = 10, sortBy = 'updatedAt', sortDir = 'desc', search, }) {
+            const skip = (page - 1) * limit;
+            // Filter dasar
+            const where = {
+            // userId,
+            // expiredAt: {
+            //   gt: new Date(),
+            // },
+            };
+            // Opsional: search pada userAgent
+            if (search && search.trim() !== '') {
+                where.title = {
+                    contains: search,
+                    mode: 'insensitive',
+                };
+            }
+            // Hitung total (without pagination)
+            const total = yield database_1.db.ticket.count({
+                where,
+            });
+            // Query data
+            const tickets = yield database_1.db.ticket.findMany({
+                where,
+                orderBy: {
+                    createdAt: sortDir,
+                },
+                skip: Number(skip),
+                take: Number(limit),
                 include: {
                     pic: true,
                     activities: true,
                 },
-                orderBy: {
-                    createdAt: 'desc',
-                },
             });
+            const totalPages = Math.ceil(total / limit);
+            return {
+                data: tickets,
+                metadata: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1,
+                    sortBy,
+                    sortDir,
+                    search: search !== null && search !== void 0 ? search : null,
+                },
+            };
         });
     }
     getTicketById(id) {
@@ -71,6 +109,23 @@ class TicketService {
                     status: 'DONE',
                     finishedAt,
                     durationMin: Math.round(duration),
+                },
+            });
+        });
+    }
+    getPic() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return database_1.db.user.findMany({
+                where: {
+                    role: 'pic_it',
+                },
+                select: {
+                    name: true,
+                    id: true,
+                    role: true,
+                },
+                orderBy: {
+                    createdAt: 'desc',
                 },
             });
         });

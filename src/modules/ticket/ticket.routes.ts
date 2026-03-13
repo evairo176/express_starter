@@ -6,12 +6,14 @@ const ticketRoutes = Router();
 
 ticketRoutes.post('/', ticketController.createTicket);
 
-ticketRoutes.get('/', ticketController.getTickets);
+ticketRoutes.get('/', ticketController.findAll);
 
 ticketRoutes.get('/:id', ticketController.getTicketById);
 
-ticketRoutes.post('/assign', ticketController.assignTicket);
+ticketRoutes.post('/:id/assign', ticketController.assignTicket);
 
 ticketRoutes.post('/:id/finish', ticketController.finishTicket);
+
+ticketRoutes.get('/users/pic', ticketController.getPic);
 
 export default ticketRoutes;

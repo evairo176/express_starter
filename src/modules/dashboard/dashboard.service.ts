@@ -94,23 +94,71 @@ export class DashboardService {
     };
   }
 
-  // public async getCategoryStats() {
-  //   return prisma.ticket.groupBy({
-  //     by: ['category'],
-  //     _count: true,
-  //   });
-  // }
-
-  public async getPicPerformance() {
+  public async getCategoryStats() {
     return prisma.ticket.groupBy({
-      by: ['picId'],
-      where: {
-        status: 'DONE',
-      },
-      _sum: {
-        durationMin: true,
-      },
+      by: ['requestType'],
       _count: true,
     });
+  }
+
+  public async getPicPerformance() {
+    const users = await prisma.user.findMany({
+      where: {
+        role: 'pic_it',
+      },
+      select: {
+        id: true,
+        name: true,
+
+        assignedTickets: {
+          select: {
+            status: true,
+            durationMin: true,
+            createdAt: true,
+            finishedAt: true,
+          },
+        },
+      },
+    });
+
+    const result = users.map((user) => {
+      const tickets = user.assignedTickets;
+
+      const doneTickets = tickets.filter((t) => t.status === 'DONE');
+
+      const unfinishedTickets = tickets.filter((t) => t.status !== 'DONE');
+
+      const totalMinutes = doneTickets.reduce(
+        (acc, t) => acc + (t.durationMin || 0),
+        0,
+      );
+
+      const totalJobs = doneTickets.length;
+
+      const avgMinutesPerJob =
+        totalJobs > 0 ? Math.round(totalMinutes / totalJobs) : 0;
+
+      const over48Hours = tickets.filter((t) => {
+        if (!t.createdAt) return false;
+
+        const end = t.finishedAt ?? new Date();
+
+        const diffHours =
+          (end.getTime() - t.createdAt.getTime()) / (1000 * 60 * 60);
+
+        return diffHours > 48;
+      }).length;
+
+      return {
+        pic: user.name,
+        totalJobs,
+        totalMinutes,
+        avgMinutesPerJob,
+        over48Hours,
+        unfinishedJobs: unfinishedTickets.length,
+      };
+    });
+
+    return result;
   }
 }

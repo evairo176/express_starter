@@ -5,6 +5,7 @@ const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
 const dashboard_module_1 = require("./dashboard.module");
 const dashboardRoutes = (0, express_1.Router)();
 dashboardRoutes.get('/analytics', jwt_strategy_1.authenticateJWT, dashboard_module_1.dashboardController.getAnalytics);
+dashboardRoutes.get('/tickets-summary', dashboard_module_1.dashboardController.getTicketSummary);
 // router.get("/summary", async (_req, res) => {
 //   const data = await dashboard.getTicketSummary()
 //   res.json(data)
