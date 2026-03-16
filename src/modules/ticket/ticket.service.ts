@@ -119,12 +119,14 @@ export class TicketService {
   public async getPic() {
     return prisma.user.findMany({
       where: {
-        role: 'pic_it',
+        role: 'PIC_IT',
       },
       select: {
         name: true,
         id: true,
         role: true,
+        roleCode: true,
+        roleRel: true,
       },
       orderBy: {
         createdAt: 'desc',

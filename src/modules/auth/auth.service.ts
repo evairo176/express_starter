@@ -41,7 +41,7 @@ import { HTTPSTATUS } from '../../config/http.config';
 export class AuthService {
   public async register(registerData: RegisterDto) {
     //   public async register(register: RegisterDto) {
-    const { name, email, password } = registerData;
+    const { name, email, password, role } = registerData;
     const existingUser = await db.user.findFirst({
       where: {
         email,
@@ -62,6 +62,8 @@ export class AuthService {
         name,
         email,
         password: hashPassword,
+        role,
+        roleCode: role,
       },
     });
 
@@ -103,6 +105,9 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
+        role: true,
+        roleCode: true,
+        roleRel: true,
       },
     });
 
@@ -180,6 +185,9 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
+        role: true,
+        roleCode: true,
+        roleRel: true,
       },
     });
 
@@ -342,6 +350,9 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
+        role: true,
+        roleCode: true,
+        roleRel: true,
       },
     });
 
@@ -548,6 +559,9 @@ export class AuthService {
         updatedAt: true,
         userPreferences: true,
         password: true, // Include password for validation
+        role: true,
+        roleCode: true,
+        roleRel: true,
       },
     });
 

@@ -26,17 +26,58 @@ model User {
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  role      String   @default("user")
 
-  // relation
+  role     String @default("USER")
+  roleCode String @default("USER")
+  roleRel  Role   @relation(fields: [roleCode], references: [code])
+
+  // relations
   userPreferences   UserPreferences?
   sessions          Session[]
-  verificationCodes VerificationCode[] // Relasi 1:N
+  verificationCodes VerificationCode[]
 
-  bookings Booking[] 
-  assignedTickets Ticket[] @relation("AssignedTickets")
+  bookings          Booking[]
+  assignedTickets   Ticket[]           @relation("AssignedTickets")
+  claims            Claim[]
+  claimApprovalLogs ClaimApprovalLog[]
 }
 
+model Role {
+  code String @id
+  name String
+
+  users User[] // ← relasi balik dari User
+
+  rolePermissions RolePermission[]
+}
+
+model Menu {
+  code String @id
+  name String
+
+  rolePermissions RolePermission[]
+}
+
+model Permission {
+  code String @id
+  name String
+
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id String @id @default(uuid())
+
+  roleCode       String
+  menuCode       String
+  permissionCode String
+
+  role       Role       @relation(fields: [roleCode], references: [code])
+  menu       Menu       @relation(fields: [menuCode], references: [code])
+  permission Permission @relation(fields: [permissionCode], references: [code])
+
+  @@unique([roleCode, menuCode, permissionCode])
+}
 
 model UserPreferences {
   id                String  @id @default(uuid()) @db.Uuid
@@ -94,7 +135,6 @@ model PortfolioTag {
 
   portfolios PortfolioTagOnPortfolio[]
 }
-
 
 // pivot table many-to-many
 model PortfolioTagOnPortfolio {
@@ -192,7 +232,6 @@ model Image {
   createdAt        DateTime  @default(now())
 }
 
-
 enum TicketStatus {
   OPEN
   IN_PROGRESS
@@ -215,6 +254,7 @@ enum RequestType {
   DOXA_REVISION
   OTHER
 }
+
 enum DoxaReason {
   CUSTOMER_REQUEST
   MARKETING_REQUEST
@@ -227,39 +267,40 @@ enum DoxaReason {
 }
 
 model Ticket {
-  id          String   @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
   title       String
   description String?
 
   requestType RequestType
 
-  doxaReason  DoxaReason[]
+  doxaReason DoxaReason[]
 
-  status      TicketStatus @default(OPEN)
+  status TicketStatus @default(OPEN)
 
-  createdAt   DateTime @default(now())
-  startedAt   DateTime?
-  finishedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
 
   durationMin Int?
 
-  picId       String?  @db.Uuid
-  pic         User?    @relation("AssignedTickets", fields: [picId], references: [id])
+  picId String? @db.Uuid
+  pic   User?   @relation("AssignedTickets", fields: [picId], references: [id])
 
-  bookingId   String   @unique @db.Uuid
-  booking     Booking  @relation(fields: [bookingId], references: [id])
+  bookingId String  @unique @db.Uuid
+  booking   Booking @relation(fields: [bookingId], references: [id])
 
-  activities  TicketActivity[]
+  activities TicketActivity[]
 }
+
 model TicketActivity {
-  id        String   @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  ticketId  String   @db.Uuid
-  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId String @db.Uuid
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
 
-  action    String
-  note      String?
+  action String
+  note   String?
 
   createdAt DateTime @default(now())
 }
@@ -272,20 +313,60 @@ enum BookingStatus {
 }
 
 model Booking {
-  id        String   @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  userId    String?  @db.Uuid
-  user      User?    @relation(fields: [userId], references: [id])
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id])
 
   date      DateTime
   startTime DateTime
   endTime   DateTime
 
-  status    BookingStatus @default(PENDING)
+  status BookingStatus @default(PENDING)
 
-  ticket    Ticket?
+  ticket Ticket?
 
   createdAt DateTime @default(now())
 
   @@unique([date, startTime])
+}
+
+enum StatusClaim {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+  APPROVED
+  REJECTED
+}
+
+model Claim {
+  id     String      @id @default(uuid()) @db.Uuid
+  name   String      @unique
+  desc   String?
+  status StatusClaim @default(DRAFT)
+
+  createdById String @db.Uuid
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  logs ClaimApprovalLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClaimApprovalLog {
+  id String @id @default(uuid())
+
+  claimId String @db.Uuid
+  claim   Claim  @relation(fields: [claimId], references: [id])
+
+  actorId String @db.Uuid
+  actor   User   @relation(fields: [actorId], references: [id])
+
+  fromStatus StatusClaim
+  toStatus   StatusClaim
+
+  note String?
+
+  createdAt DateTime @default(now())
 }

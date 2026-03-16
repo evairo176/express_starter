@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Role } from '../enums/role.enum';
 
 export const emailSchema = z.string().trim().email().min(1).max(255);
 export const passwordSchema = z.string().trim().min(6).max(255);
@@ -10,6 +11,7 @@ export const registerSchema = z
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema,
+    role: z.enum([Role.USER, Role.APPROVER, Role.VERIFIER]),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: 'Password does not match',

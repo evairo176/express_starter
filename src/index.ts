@@ -21,6 +21,10 @@ import portfolioRoutes from './modules/portfolio/portfolio.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import ticketRoutes from './modules/ticket/ticket.routes';
 import bookingRoutes from './modules/booking/booking.routes';
+import claimRoutes from './modules/claim/claim.routes';
+import rolePermissionRoutes from './modules/rolePermission/rolePermission.routes';
+import roleRoutes from './modules/role/role.routes';
+import menuRoutes from './modules/menu/menu.routes';
 // import { seedRoles } from './libs/seed';
 
 const app = express();
@@ -62,6 +66,10 @@ app.use(`${BASE_PATH}/image`, imageRoutes);
 app.use(`${BASE_PATH}/dashboard`, dashboardRoutes);
 app.use(`${BASE_PATH}/tickets`, ticketRoutes);
 app.use(`${BASE_PATH}/booking`, bookingRoutes);
+app.use(`${BASE_PATH}/claims`, claimRoutes);
+app.use(`${BASE_PATH}/menu`, menuRoutes);
+app.use(`${BASE_PATH}/roles`, roleRoutes);
+app.use(`${BASE_PATH}/role-permissions`, rolePermissionRoutes);
 
 // app.use('/api/auth', authRouter);
 
