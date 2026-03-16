@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetPasswordSchema = exports.verificationEmailSchema = exports.loginSchema = exports.registerSchema = exports.verificationCodeSchema = exports.passwordSchema = exports.emailSchema = void 0;
 const zod_1 = require("zod");
+const role_enum_1 = require("../enums/role.enum");
 exports.emailSchema = zod_1.z.string().trim().email().min(1).max(255);
 exports.passwordSchema = zod_1.z.string().trim().min(6).max(255);
 exports.verificationCodeSchema = zod_1.z.string().trim().min(1).max(25);
@@ -11,6 +12,7 @@ exports.registerSchema = zod_1.z
     email: exports.emailSchema,
     password: exports.passwordSchema,
     confirmPassword: exports.passwordSchema,
+    role: zod_1.z.enum([role_enum_1.Role.USER, role_enum_1.Role.APPROVER, role_enum_1.Role.VERIFIER]),
 })
     .refine((value) => value.password === value.confirmPassword, {
     message: 'Password does not match',

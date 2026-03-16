@@ -25,7 +25,7 @@ class AuthService {
     register(registerData) {
         return __awaiter(this, void 0, void 0, function* () {
             //   public async register(register: RegisterDto) {
-            const { name, email, password } = registerData;
+            const { name, email, password, role } = registerData;
             const existingUser = yield database_1.db.user.findFirst({
                 where: {
                     email,
@@ -40,6 +40,8 @@ class AuthService {
                     name,
                     email,
                     password: hashPassword,
+                    role,
+                    roleCode: role,
                 },
             });
             const userId = newUser.id;
@@ -73,6 +75,9 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
+                    role: true,
+                    roleCode: true,
+                    roleRel: true,
                 },
             });
             return {
@@ -133,6 +138,9 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
+                    role: true,
+                    roleCode: true,
+                    roleRel: true,
                 },
             });
             return {
@@ -264,6 +272,9 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
+                    role: true,
+                    roleCode: true,
+                    roleRel: true,
                 },
             });
             return {
@@ -443,6 +454,9 @@ class AuthService {
                     updatedAt: true,
                     userPreferences: true,
                     password: true, // Include password for validation
+                    role: true,
+                    roleCode: true,
+                    roleRel: true,
                 },
             });
             if (!user) {

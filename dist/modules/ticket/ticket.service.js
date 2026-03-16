@@ -117,12 +117,14 @@ class TicketService {
         return __awaiter(this, void 0, void 0, function* () {
             return database_1.db.user.findMany({
                 where: {
-                    role: 'pic_it',
+                    role: 'PIC_IT',
                 },
                 select: {
                     name: true,
                     id: true,
                     role: true,
+                    roleCode: true,
+                    roleRel: true,
                 },
                 orderBy: {
                     createdAt: 'desc',

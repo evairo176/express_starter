@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const rolePermission_module_1 = require("./rolePermission.module");
+const role_1 = require("../../middlewares/role/role");
+const role_enum_1 = require("../../cummon/enums/role.enum");
+const rolePermissionRoutes = (0, express_1.Router)();
+rolePermissionRoutes.post('/', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.ADMIN), rolePermission_module_1.rolePermissionController.setRolePermission);
+rolePermissionRoutes.get('/:roleCode', jwt_strategy_1.authenticateJWT, rolePermission_module_1.rolePermissionController.getRolePermissions);
+exports.default = rolePermissionRoutes;

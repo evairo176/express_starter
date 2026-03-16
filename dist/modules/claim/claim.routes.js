@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const claim_module_1 = require("./claim.module");
+const role_1 = require("../../middlewares/role/role");
+const role_enum_1 = require("../../cummon/enums/role.enum");
+const claimRoutes = (0, express_1.Router)();
+claimRoutes.get('/', jwt_strategy_1.authenticateJWT, claim_module_1.claimController.findAll);
+claimRoutes.post('/', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.USER), claim_module_1.claimController.createClaim);
+claimRoutes.get('/:id', jwt_strategy_1.authenticateJWT, claim_module_1.claimController.findOne);
+claimRoutes.patch('/:id/submit', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.USER), claim_module_1.claimController.submitClaim);
+claimRoutes.patch('/:id/review', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.VERIFIER), claim_module_1.claimController.reviewClaim);
+claimRoutes.patch('/:id/approve', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.APPROVER), claim_module_1.claimController.approveClaim);
+claimRoutes.patch('/:id/reject', jwt_strategy_1.authenticateJWT, (0, role_1.role)(role_enum_1.Role.APPROVER), claim_module_1.claimController.rejectClaim);
+exports.default = claimRoutes;
