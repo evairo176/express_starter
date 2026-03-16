@@ -104,7 +104,7 @@ export class DashboardService {
   public async getPicPerformance() {
     const users = await prisma.user.findMany({
       where: {
-        role: 'pic_it',
+        role: 'PIC_IT',
       },
       select: {
         id: true,
