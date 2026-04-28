@@ -77,12 +77,17 @@ app.use(`${BASE_PATH}/docs`, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(errorHandler);
 // app.use(notFound);
 
-// Start the server and export the server instance
-const server = app.listen(config.PORT, () => {
-  console.log(
-    `Server is running on http://localhost:${config.PORT}${BASE_PATH} in ${config.NODE_ENV}`,
-  );
-});
+// Start the server and export the server instance.
+// Skip listening in test environment so Jest can import the app without
+// trying to bind the port (and avoid conflicts with the dev server).
+const server =
+  process.env.NODE_ENV === 'test'
+    ? undefined
+    : app.listen(config.PORT, () => {
+        console.log(
+          `Server is running on http://localhost:${config.PORT}${BASE_PATH} in ${config.NODE_ENV}`,
+        );
+      });
 
 export { server };
 export default app; // Tambahkan ini agar Vercel bisa menangkap aplikasi

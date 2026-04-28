@@ -4,7 +4,7 @@ const request = require('supertest'); // Require import to prevent type error wi
 describe('GET /', () => {
   // This block runs after all the tests in this describe block are complete
   afterAll(() => {
-    server.close(); // Close the server to prevent open handle issues with Jest
+    server?.close(); // Close the server to prevent open handle issues with Jest
   });
 
   // This is an individual test case
