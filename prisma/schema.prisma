@@ -27,56 +27,10 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  role     String @default("USER")
-  roleCode String @default("USER")
-  roleRel  Role   @relation(fields: [roleCode], references: [code])
-
   // relations
   userPreferences   UserPreferences?
   sessions          Session[]
   verificationCodes VerificationCode[]
-
-  bookings          Booking[]
-  assignedTickets   Ticket[]           @relation("AssignedTickets")
-  claims            Claim[]
-  claimApprovalLogs ClaimApprovalLog[]
-}
-
-model Role {
-  code String @id
-  name String
-
-  users User[] // ← relasi balik dari User
-
-  rolePermissions RolePermission[]
-}
-
-model Menu {
-  code String @id
-  name String
-
-  rolePermissions RolePermission[]
-}
-
-model Permission {
-  code String @id
-  name String
-
-  rolePermissions RolePermission[]
-}
-
-model RolePermission {
-  id String @id @default(uuid())
-
-  roleCode       String
-  menuCode       String
-  permissionCode String
-
-  role       Role       @relation(fields: [roleCode], references: [code])
-  menu       Menu       @relation(fields: [menuCode], references: [code])
-  permission Permission @relation(fields: [permissionCode], references: [code])
-
-  @@unique([roleCode, menuCode, permissionCode])
 }
 
 model UserPreferences {
@@ -232,141 +186,16 @@ model Image {
   createdAt        DateTime  @default(now())
 }
 
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  DONE
-  CANCELLED
-}
-
-enum TicketCategory {
-  SOFTWARE
-  LAPTOP
-  PRINTER
-  NETWORK
-}
-
-enum RequestType {
-  SOFTWARE
-  LAPTOP
-  PRINTER
-  NETWORK
-  DOXA_REVISION
-  OTHER
-}
-
-enum DoxaReason {
-  CUSTOMER_REQUEST
-  MARKETING_REQUEST
-  SUPPLIER_REQUEST
-  DOXA_ERROR
-  REJECTION
-  PO_TOLERANCE
-  HUMAN_ERROR
-  OTHER
-}
-
-model Ticket {
-  id String @id @default(uuid()) @db.Uuid
-
+model BlogPost {
+  id          String   @id @default(uuid()) @db.Uuid
   title       String
-  description String?
-
-  requestType RequestType
-
-  doxaReason DoxaReason[]
-
-  status TicketStatus @default(OPEN)
-
-  createdAt  DateTime  @default(now())
-  startedAt  DateTime?
-  finishedAt DateTime?
-
-  durationMin Int?
-
-  picId String? @db.Uuid
-  pic   User?   @relation("AssignedTickets", fields: [picId], references: [id])
-
-  bookingId String  @unique @db.Uuid
-  booking   Booking @relation(fields: [bookingId], references: [id])
-
-  activities TicketActivity[]
-}
-
-model TicketActivity {
-  id String @id @default(uuid()) @db.Uuid
-
-  ticketId String @db.Uuid
-  ticket   Ticket @relation(fields: [ticketId], references: [id])
-
-  action String
-  note   String?
-
-  createdAt DateTime @default(now())
-}
-
-enum BookingStatus {
-  PENDING
-  APPROVED
-  DONE
-  CANCELLED
-}
-
-model Booking {
-  id String @id @default(uuid()) @db.Uuid
-
-  userId String? @db.Uuid
-  user   User?   @relation(fields: [userId], references: [id])
-
-  date      DateTime
-  startTime DateTime
-  endTime   DateTime
-
-  status BookingStatus @default(PENDING)
-
-  ticket Ticket?
-
-  createdAt DateTime @default(now())
-
-  @@unique([date, startTime])
-}
-
-enum StatusClaim {
-  DRAFT
-  SUBMITTED
-  REVIEWED
-  APPROVED
-  REJECTED
-}
-
-model Claim {
-  id     String      @id @default(uuid()) @db.Uuid
-  name   String      @unique
-  desc   String?
-  status StatusClaim @default(DRAFT)
-
-  createdById String @db.Uuid
-  createdBy   User   @relation(fields: [createdById], references: [id])
-
-  logs ClaimApprovalLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ClaimApprovalLog {
-  id String @id @default(uuid())
-
-  claimId String @db.Uuid
-  claim   Claim  @relation(fields: [claimId], references: [id])
-
-  actorId String @db.Uuid
-  actor   User   @relation(fields: [actorId], references: [id])
-
-  fromStatus StatusClaim
-  toStatus   StatusClaim
-
-  note String?
-
-  createdAt DateTime @default(now())
+  slug        String   @unique
+  excerpt     String?
+  content     String?  @db.Text
+  coverImage  String?
+  isPublished Boolean  @default(false)
+  totalViews  Int      @default(0)
+  totalLikes  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

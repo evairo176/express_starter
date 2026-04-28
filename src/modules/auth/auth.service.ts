@@ -62,8 +62,6 @@ export class AuthService {
         name,
         email,
         password: hashPassword,
-        role,
-        roleCode: role,
       },
     });
 
@@ -105,9 +103,6 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
-        role: true,
-        roleCode: true,
-        roleRel: true,
       },
     });
 
@@ -185,9 +180,6 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
-        role: true,
-        roleCode: true,
-        roleRel: true,
       },
     });
 
@@ -350,9 +342,6 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         userPreferences: true,
-        role: true,
-        roleCode: true,
-        roleRel: true,
       },
     });
 
@@ -559,9 +548,6 @@ export class AuthService {
         updatedAt: true,
         userPreferences: true,
         password: true, // Include password for validation
-        role: true,
-        roleCode: true,
-        roleRel: true,
       },
     });
 

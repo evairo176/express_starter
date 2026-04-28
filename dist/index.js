@@ -25,12 +25,7 @@ const techStack_routes_1 = __importDefault(require("./modules/techStack/techStac
 const image_routes_1 = __importDefault(require("./modules/image/image.routes"));
 const portfolio_routes_1 = __importDefault(require("./modules/portfolio/portfolio.routes"));
 const dashboard_routes_1 = __importDefault(require("./modules/dashboard/dashboard.routes"));
-const ticket_routes_1 = __importDefault(require("./modules/ticket/ticket.routes"));
-const booking_routes_1 = __importDefault(require("./modules/booking/booking.routes"));
-const claim_routes_1 = __importDefault(require("./modules/claim/claim.routes"));
-const rolePermission_routes_1 = __importDefault(require("./modules/rolePermission/rolePermission.routes"));
-const role_routes_1 = __importDefault(require("./modules/role/role.routes"));
-const menu_routes_1 = __importDefault(require("./modules/menu/menu.routes"));
+const blogPost_routes_1 = __importDefault(require("./modules/blogPost/blogPost.routes"));
 // import { seedRoles } from './libs/seed';
 const app = (0, express_1.default)();
 const BASE_PATH = app_config_1.config.BASE_PATH;
@@ -63,12 +58,7 @@ app.use(`${BASE_PATH}/portfolio-tag`, portfolioTag_routes_1.default);
 app.use(`${BASE_PATH}/tech-stack`, techStack_routes_1.default);
 app.use(`${BASE_PATH}/image`, image_routes_1.default);
 app.use(`${BASE_PATH}/dashboard`, dashboard_routes_1.default);
-app.use(`${BASE_PATH}/tickets`, ticket_routes_1.default);
-app.use(`${BASE_PATH}/booking`, booking_routes_1.default);
-app.use(`${BASE_PATH}/claims`, claim_routes_1.default);
-app.use(`${BASE_PATH}/menu`, menu_routes_1.default);
-app.use(`${BASE_PATH}/roles`, role_routes_1.default);
-app.use(`${BASE_PATH}/role-permissions`, rolePermission_routes_1.default);
+app.use(`${BASE_PATH}/blog-posts`, blogPost_routes_1.default);
 // app.use('/api/auth', authRouter);
 // Swagger configuration options
 // seed

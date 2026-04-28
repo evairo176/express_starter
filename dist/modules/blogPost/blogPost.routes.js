@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const blogPost_module_1 = require("./blogPost.module");
+const blogPostRoutes = (0, express_1.Router)();
+blogPostRoutes.get('/public', blogPost_module_1.blogPostController.findAllPublic);
+blogPostRoutes.get('/public/:slug', blogPost_module_1.blogPostController.getPublicBySlug);
+blogPostRoutes.post('/:id/view', blogPost_module_1.blogPostController.incrementView);
+blogPostRoutes.post('/:id/like', blogPost_module_1.blogPostController.incrementLike);
+blogPostRoutes.use(jwt_strategy_1.authenticateJWT);
+blogPostRoutes.post('/', blogPost_module_1.blogPostController.create);
+blogPostRoutes.get('/', blogPost_module_1.blogPostController.findAllAdmin);
+blogPostRoutes.get('/:id', blogPost_module_1.blogPostController.getOne);
+blogPostRoutes.put('/:id', blogPost_module_1.blogPostController.update);
+blogPostRoutes.delete('/:id', blogPost_module_1.blogPostController.destroy);
+exports.default = blogPostRoutes;

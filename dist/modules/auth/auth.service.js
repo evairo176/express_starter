@@ -40,8 +40,6 @@ class AuthService {
                     name,
                     email,
                     password: hashPassword,
-                    role,
-                    roleCode: role,
                 },
             });
             const userId = newUser.id;
@@ -75,9 +73,6 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
-                    role: true,
-                    roleCode: true,
-                    roleRel: true,
                 },
             });
             return {
@@ -138,9 +133,6 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
-                    role: true,
-                    roleCode: true,
-                    roleRel: true,
                 },
             });
             return {
@@ -272,9 +264,6 @@ class AuthService {
                     createdAt: true,
                     updatedAt: true,
                     userPreferences: true,
-                    role: true,
-                    roleCode: true,
-                    roleRel: true,
                 },
             });
             return {
@@ -454,9 +443,6 @@ class AuthService {
                     updatedAt: true,
                     userPreferences: true,
                     password: true, // Include password for validation
-                    role: true,
-                    roleCode: true,
-                    roleRel: true,
                 },
             });
             if (!user) {

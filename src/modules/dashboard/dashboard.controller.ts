@@ -19,20 +19,4 @@ export class DashboardController {
       });
     },
   );
-
-  public getTicketSummary = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const [ticketSummary, categoryStats, picPerformance] = await Promise.all([
-        this.dashboardService.getTicketSummary(),
-        this.dashboardService.getCategoryStats(),
-        this.dashboardService.getPicPerformance(),
-      ]);
-      return response.success(
-        res,
-        { ticketSummary, categoryStats, picPerformance },
-        `Get ticket summary successfully`,
-        HTTPSTATUS.OK,
-      );
-    },
-  );
 }

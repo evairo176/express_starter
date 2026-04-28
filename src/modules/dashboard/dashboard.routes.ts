@@ -10,8 +10,6 @@ dashboardRoutes.get(
   dashboardController.getAnalytics,
 );
 
-dashboardRoutes.get('/tickets-summary', dashboardController.getTicketSummary);
-
 // router.get("/summary", async (_req, res) => {
 //   const data = await dashboard.getTicketSummary()
 //   res.json(data)
