@@ -14,7 +14,8 @@
     "add-build": "git add dist",
     "postinstall": "npx prisma generate",
     "reset-blog-views": "ts-node scripts/reset-blog-views.ts",
-    "backup:now": "ts-node scripts/run-backup.ts"
+    "backup:now": "ts-node scripts/run-backup.ts",
+    "backup:import": "ts-node scripts/run-import.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

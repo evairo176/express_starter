@@ -1,8 +1,9 @@
 import { exec } from 'child_process';
 import { createReadStream } from 'fs';
-import { mkdir, stat, unlink } from 'fs/promises';
+import { mkdir, readFile, stat, unlink, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
+import { gunzipSync } from 'zlib';
 import { promisify } from 'util';
 
 import axios from 'axios';
@@ -49,8 +50,10 @@ export class BackupService {
     const filePath = path.join(dir, fileName);
 
     // `pg_dump` honors the connection string directly. `--no-owner`/`--no-acl`
-    // keep the dump portable; gzip compresses the output stream.
-    const command = `pg_dump "${databaseUrl}" --no-owner --no-acl | gzip > "${filePath}"`;
+    // keep the dump portable; `--clean --if-exists` prepends DROP statements so
+    // the dump can be restored onto an existing database idempotently; gzip
+    // compresses the output stream.
+    const command = `pg_dump "${databaseUrl}" --no-owner --no-acl --clean --if-exists | gzip > "${filePath}"`;
 
     Logger.info('[backup] running pg_dump...');
     await execAsync(command, {
@@ -100,6 +103,180 @@ export class BackupService {
       timeout: 120000,
     });
     Logger.info('[backup] backup sent to Telegram successfully');
+  }
+
+  /**
+   * Core tables expected to be present in a valid dump. These map to the
+   * Prisma models that hold the portfolio/blog content; a dump missing any of
+   * them is considered structurally incompatible with the current schema.
+   */
+  private static readonly EXPECTED_TABLES = [
+    'User',
+    'Portfolio',
+    'PortfolioCategory',
+    'TechStack',
+    'BlogPost',
+    'BlogCategory',
+    'Achievement',
+    'Testimonial',
+  ];
+
+  /**
+   * Read a gzip-compressed SQL dump back into a plain UTF-8 string. Accepts
+   * either a `.gz` file (decompressed in memory) or a raw `.sql` file.
+   */
+  private async readDumpSql(filePath: string): Promise<string> {
+    const buffer = await readFile(filePath);
+    if (filePath.endsWith('.gz')) {
+      return gunzipSync(buffer).toString('utf8');
+    }
+    return buffer.toString('utf8');
+  }
+
+  /**
+   * Validate a dump file before importing it. Two independent checks:
+   *
+   *  1. **Schema compatibility** — every core table (see `EXPECTED_TABLES`)
+   *     must be referenced by a `CREATE TABLE`/`COPY`/`INSERT` statement, so we
+   *     never restore a dump that belongs to a different/older schema.
+   *  2. **Has data** — the dump must contain at least one `COPY ... FROM stdin`
+   *     block with rows, or at least one `INSERT INTO` statement, so we never
+   *     wipe the live database with an empty backup.
+   *
+   * Returns a structured report; `ok` is true only when both checks pass.
+   */
+  public async validateDump(filePath: string): Promise<{
+    ok: boolean;
+    missingTables: string[];
+    hasData: boolean;
+    foundTables: string[];
+    errors: string[];
+  }> {
+    const sql = await this.readDumpSql(filePath);
+    const errors: string[] = [];
+
+    // ---- Schema compatibility -------------------------------------------
+    const foundTables: string[] = [];
+    const missingTables: string[] = [];
+    for (const table of BackupService.EXPECTED_TABLES) {
+      // pg_dump quotes identifiers and qualifies them with the schema, e.g.
+      // `CREATE TABLE public."Portfolio"` / `COPY public."Portfolio"`. Match
+      // either the quoted form (exact, so "Portfolio" never matches
+      // "PortfolioCategory") or an unquoted identifier with a word boundary.
+      const pattern = new RegExp(
+        `(CREATE TABLE|COPY|INSERT INTO)\\s+(public\\.)?("${table}"|${table}\\b)`,
+      );
+      if (pattern.test(sql)) {
+        foundTables.push(table);
+      } else {
+        missingTables.push(table);
+      }
+    }
+    if (missingTables.length > 0) {
+      errors.push(
+        `Dump is missing expected tables: ${missingTables.join(', ')}. ` +
+          'It may belong to a different schema.',
+      );
+    }
+
+    // ---- Has data --------------------------------------------------------
+    // Scan line by line. Inside a `COPY ... FROM stdin;` block (terminated by a
+    // line that is exactly `\.`), any non-empty line is a data row. Fall back
+    // to detecting `INSERT INTO` statements for insert-style dumps.
+    let hasData = false;
+    let inCopy = false;
+    for (const rawLine of sql.split('\n')) {
+      const line = rawLine.trimEnd();
+      if (!inCopy) {
+        if (/^COPY\b.*FROM stdin;$/.test(line)) {
+          inCopy = true;
+        }
+        continue;
+      }
+      // Inside a COPY block.
+      if (line === '\\.') {
+        inCopy = false;
+        continue;
+      }
+      if (line.trim().length > 0) {
+        hasData = true;
+        break;
+      }
+    }
+    if (!hasData && /INSERT INTO\s+/.test(sql)) {
+      hasData = true;
+    }
+    if (!hasData) {
+      errors.push('Dump contains no row data (all tables are empty).');
+    }
+
+    return {
+      ok: missingTables.length === 0 && hasData,
+      missingTables,
+      hasData,
+      foundTables,
+      errors,
+    };
+  }
+
+  /**
+   * Restore a dump file into `DATABASE_URL`. Validates the dump first (schema
+   * compatibility + non-empty data) and refuses to proceed when invalid.
+   *
+   * The restore runs through `psql` with `ON_ERROR_STOP=1` and
+   * `--single-transaction`, so the entire import is atomic — any error rolls
+   * back the whole thing, leaving the database untouched. Because dumps are
+   * created with `--clean --if-exists`, existing objects are dropped and
+   * recreated as part of the same transaction.
+   *
+   * This is a destructive operation against the target database; callers
+   * (e.g. `scripts/run-import.ts`) must require explicit confirmation.
+   */
+  public async importDump(filePath: string): Promise<{
+    fileName: string;
+    validation: Awaited<ReturnType<BackupService['validateDump']>>;
+  }> {
+    const databaseUrl = getEnv('DATABASE_URL');
+
+    const validation = await this.validateDump(filePath);
+    if (!validation.ok) {
+      throw new Error(
+        `Refusing to import: dump failed validation. ${validation.errors.join(' ')}`,
+      );
+    }
+
+    // Decompress to a temp .sql when needed; psql reads plain SQL.
+    let sqlPath = filePath;
+    let tempSqlPath: string | undefined;
+    if (filePath.endsWith('.gz')) {
+      const sql = await this.readDumpSql(filePath);
+      const dir = path.join(os.tmpdir(), 'db-backups');
+      await mkdir(dir, { recursive: true });
+      tempSqlPath = path.join(dir, `restore-${Date.now()}.sql`);
+      await writeFile(tempSqlPath, sql, 'utf8');
+      sqlPath = tempSqlPath;
+    }
+
+    try {
+      const command =
+        `psql "${databaseUrl}" --set ON_ERROR_STOP=1 --single-transaction ` +
+        `-f "${sqlPath}"`;
+
+      Logger.info('[backup] importing dump via psql (single transaction)...');
+      await execAsync(command, {
+        maxBuffer: 1024 * 1024 * 128,
+        shell: '/bin/bash',
+      });
+      Logger.info('[backup] dump imported successfully');
+
+      return { fileName: path.basename(filePath), validation };
+    } finally {
+      if (tempSqlPath) {
+        await unlink(tempSqlPath).catch(() => {
+          // Best-effort cleanup; ignore failures.
+        });
+      }
+    }
   }
 
   /**
