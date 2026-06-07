@@ -280,6 +280,71 @@ export class BackupService {
   }
 
   /**
+   * Persist an uploaded dump buffer to a temp file so the path-based
+   * `validateDump`/`importDump` logic can operate on it. Returns the temp path;
+   * caller is responsible for cleanup.
+   */
+  private async writeBufferToTemp(
+    buffer: Buffer,
+    originalName: string,
+  ): Promise<string> {
+    const dir = path.join(os.tmpdir(), 'db-backups');
+    await mkdir(dir, { recursive: true });
+    // Preserve the .gz/.sql suffix so downstream logic decompresses correctly.
+    const ext = originalName.endsWith('.gz')
+      ? '.sql.gz'
+      : originalName.endsWith('.sql')
+        ? '.sql'
+        : '.sql.gz';
+    const tempPath = path.join(dir, `upload-${Date.now()}${ext}`);
+    await writeFile(tempPath, buffer);
+    return tempPath;
+  }
+
+  /**
+   * Validate an uploaded dump buffer (no DB changes). Writes the buffer to a
+   * temp file, runs `validateDump`, then cleans up. Used by the admin
+   * `POST /backup/validate` endpoint to preview a dump before restoring.
+   */
+  public async validateBuffer(
+    buffer: Buffer,
+    originalName: string,
+  ): Promise<Awaited<ReturnType<BackupService['validateDump']>>> {
+    const tempPath = await this.writeBufferToTemp(buffer, originalName);
+    try {
+      return await this.validateDump(tempPath);
+    } finally {
+      await unlink(tempPath).catch(() => {
+        // Best-effort cleanup; ignore failures.
+      });
+    }
+  }
+
+  /**
+   * Validate and restore an uploaded dump buffer into `DATABASE_URL`. Writes
+   * the buffer to a temp file, delegates to `importDump` (which validates and
+   * restores atomically), then cleans up. Used by the admin
+   * `POST /backup/import` endpoint. Destructive — callers must enforce auth.
+   */
+  public async importBuffer(
+    buffer: Buffer,
+    originalName: string,
+  ): Promise<{
+    fileName: string;
+    validation: Awaited<ReturnType<BackupService['validateDump']>>;
+  }> {
+    const tempPath = await this.writeBufferToTemp(buffer, originalName);
+    try {
+      const result = await this.importDump(tempPath);
+      return { ...result, fileName: originalName };
+    } finally {
+      await unlink(tempPath).catch(() => {
+        // Best-effort cleanup; ignore failures.
+      });
+    }
+  }
+
+  /**
    * Full backup flow: dump the database, deliver it to Telegram, then clean up
    * the temp file. Returns the file name on success.
    */

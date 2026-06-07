@@ -32,6 +32,7 @@ import blogTagRoutes from './modules/blogTag/blogTag.routes';
 import blogCommentRoutes from './modules/blogComment/blogComment.routes';
 import blogReactionRoutes from './modules/blogReaction/blogReaction.routes';
 import seoRoutes from './modules/seo/seo.routes';
+import backupRoutes from './modules/backup/backup.routes';
 import { registerBackupCron } from './modules/backup/backup.scheduler';
 // import { seedRoles } from './libs/seed';
 
@@ -88,6 +89,7 @@ app.use(`${BASE_PATH}/blog-tag`, blogTagRoutes);
 app.use(`${BASE_PATH}/testimonial`, testimonialRoutes);
 app.use(`${BASE_PATH}/achievements`, achievementRoutes);
 app.use(`${BASE_PATH}/analytics`, analyticsRoutes);
+app.use(`${BASE_PATH}/backup`, backupRoutes);
 
 // Public write endpoints with writeLimiter applied inside their routers
 // (contact submit, newsletter subscribe) (Req 12.2).
