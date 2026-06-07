@@ -31,6 +31,15 @@ export const PortfolioPublicListQuerySchema = PaginationQuerySchema.extend({
   tech: z.string().min(1).optional(),
   search: z.string().min(1).optional(),
   featured: optionalQueryBoolean,
+  // Result ordering (Req: user-selectable sort). Defaults to newest first.
+  // - `newest`   : most recently created first
+  // - `oldest`   : earliest created first
+  // - `recently-updated` : most recently updated first
+  // - `featured` : featured projects first, then newest
+  sort: z
+    .enum(['newest', 'oldest', 'recently-updated', 'featured'])
+    .optional()
+    .default('newest'),
 });
 
 export type PortfolioPublicListQueryDTO = z.infer<

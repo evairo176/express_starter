@@ -91,6 +91,7 @@ export class PortfolioController {
         tech: splitCsv(parsed.tech),
         search: parsed.search,
         featured: parsed.featured,
+        sort: parsed.sort,
       });
 
       return response.success(

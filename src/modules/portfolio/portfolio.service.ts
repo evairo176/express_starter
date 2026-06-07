@@ -252,6 +252,7 @@ export class PortfolioService {
     tech?: string[];
     search?: string;
     featured?: boolean;
+    sort?: 'newest' | 'oldest' | 'recently-updated' | 'featured';
   }) {
     const page = params.page ?? 1;
     const limit = params.limit ?? 10;
@@ -304,9 +305,25 @@ export class PortfolioService {
 
     const total = await db.portfolio.count({ where });
 
+    // Map the requested sort to a Prisma orderBy. Defaults to newest-first.
+    // `featured` lists featured projects first, then newest within each group.
+    const orderBy = ((): any => {
+      switch (params.sort) {
+        case 'oldest':
+          return { createdAt: 'asc' };
+        case 'recently-updated':
+          return { updatedAt: 'desc' };
+        case 'featured':
+          return [{ featured: 'desc' }, { createdAt: 'desc' }];
+        case 'newest':
+        default:
+          return { createdAt: 'desc' };
+      }
+    })();
+
     const data = await db.portfolio.findMany({
       where,
-      orderBy: { updatedAt: 'desc' },
+      orderBy,
       skip,
       take: limit,
       include: {
