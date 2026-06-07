@@ -73,9 +73,7 @@ class SeoService {
      */
     buildMeta(item) {
         var _a, _b, _c, _d, _e, _f, _g;
-        const title = ((_a = item.metaTitle) === null || _a === void 0 ? void 0 : _a.trim())
-            ? item.metaTitle
-            : ((_b = item.title) !== null && _b !== void 0 ? _b : '');
+        const title = ((_a = item.metaTitle) === null || _a === void 0 ? void 0 : _a.trim()) ? item.metaTitle : ((_b = item.title) !== null && _b !== void 0 ? _b : '');
         const description = ((_c = item.metaDesc) === null || _c === void 0 ? void 0 : _c.trim())
             ? item.metaDesc
             : ((_e = (_d = item.shortDesc) !== null && _d !== void 0 ? _d : item.excerpt) !== null && _e !== void 0 ? _e : '');
@@ -109,7 +107,9 @@ class SeoService {
                 }),
             ]);
             const entries = [
-                ...projects.map((p) => ({ url: this.canonicalUrl(`/projects/${p.slug}`) })),
+                ...projects.map((p) => ({
+                    url: this.canonicalUrl(`/projects/${p.slug}`),
+                })),
                 ...posts.map((p) => ({ url: this.canonicalUrl(`/blog/${p.slug}`) })),
             ];
             return this.buildSitemap(entries);

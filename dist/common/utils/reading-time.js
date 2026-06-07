@@ -12,9 +12,7 @@ const WORDS_PER_MINUTE = 200;
 const countWords = (content) => {
     if (!content)
         return 0;
-    return content
-        .split(/\s+/)
-        .filter((token) => token.length > 0).length;
+    return content.split(/\s+/).filter((token) => token.length > 0).length;
 };
 exports.countWords = countWords;
 /**

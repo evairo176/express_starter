@@ -6,10 +6,7 @@ const get_env_1 = require("../common/utils/get-env");
  * Default origins allowed during local development when
  * `CORS_ALLOWED_ORIGINS` is not provided.
  */
-const DEFAULT_DEV_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-];
+const DEFAULT_DEV_ORIGINS = ['http://localhost:3000', 'http://localhost:5173'];
 /**
  * Parse the comma-separated `CORS_ALLOWED_ORIGINS` env var into a normalized
  * allowlist. Empty entries and surrounding whitespace are stripped. When the
