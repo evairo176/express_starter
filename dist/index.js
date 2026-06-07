@@ -38,6 +38,7 @@ const blogTag_routes_1 = __importDefault(require("./modules/blogTag/blogTag.rout
 const blogComment_routes_1 = __importDefault(require("./modules/blogComment/blogComment.routes"));
 const blogReaction_routes_1 = __importDefault(require("./modules/blogReaction/blogReaction.routes"));
 const seo_routes_1 = __importDefault(require("./modules/seo/seo.routes"));
+const backup_routes_1 = __importDefault(require("./modules/backup/backup.routes"));
 const backup_scheduler_1 = require("./modules/backup/backup.scheduler");
 // import { seedRoles } from './libs/seed';
 const app = (0, express_1.default)();
@@ -85,6 +86,7 @@ app.use(`${BASE_PATH}/blog-tag`, blogTag_routes_1.default);
 app.use(`${BASE_PATH}/testimonial`, testimonial_routes_1.default);
 app.use(`${BASE_PATH}/achievements`, achievement_routes_1.default);
 app.use(`${BASE_PATH}/analytics`, analytics_routes_1.default);
+app.use(`${BASE_PATH}/backup`, backup_routes_1.default);
 // Public write endpoints with writeLimiter applied inside their routers
 // (contact submit, newsletter subscribe) (Req 12.2).
 app.use(`${BASE_PATH}/contact`, contact_routes_1.default);
