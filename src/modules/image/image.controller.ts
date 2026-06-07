@@ -1,9 +1,9 @@
 // src/controllers/image.controller.ts
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 import { HTTPSTATUS } from '../../config/http.config';
-import { CreateImageSchema } from '../../cummon/zod/image.schema';
+import { CreateImageSchema } from '../../common/zod/image.schema';
 import { CreateImageDTO, ImageService } from './image.service';
 
 export class ImageController {

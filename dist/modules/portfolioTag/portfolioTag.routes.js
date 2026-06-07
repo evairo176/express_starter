@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const jwt_strategy_1 = require("../../common/strategies/jwt.strategy");
 const portfolioTag_module_1 = require("./portfolioTag.module");
 /**
  * @swagger
@@ -49,7 +49,7 @@ portfolioTagRoutes.post('/', jwt_strategy_1.authenticateJWT, portfolioTag_module
  *       200:
  *         description: List of tags
  */
-portfolioTagRoutes.get('/', jwt_strategy_1.authenticateJWT, portfolioTag_module_1.portfolioTagController.findAll);
+portfolioTagRoutes.get('/', portfolioTag_module_1.portfolioTagController.findAll);
 /**
  * @swagger
  * /portfolio-tag/{id}:

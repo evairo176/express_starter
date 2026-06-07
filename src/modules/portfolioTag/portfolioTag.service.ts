@@ -1,7 +1,7 @@
 import {
   CreatePortfolioTagDTO,
   UpdatePortfolioTagDTO,
-} from '../../cummon/zod/portfolio-tag.schema';
+} from '../../common/zod/portfolio-tag.schema';
 import { db } from '../../database/database';
 
 export class PortfolioTagService {

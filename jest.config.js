@@ -5,6 +5,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
   },
+  setupFiles: ['<rootDir>/tests/jest.setup.ts'],
   moduleNameMapper: {
     '^@controller/(.*)$': '<rootDir>/src/controller/$1',
     '^@middlewares/(.*)$': '<rootDir>/src/middlewares/$1',

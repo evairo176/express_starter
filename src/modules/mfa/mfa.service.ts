@@ -3,12 +3,12 @@ import {
   BadRequestException,
   NotFoundException,
   UnauthorizedException,
-} from '../../cummon/utils/catch-errors';
+} from '../../common/utils/catch-errors';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { db } from '../../database/database';
-import { oneDaysFromNow } from '../../cummon/utils/date-time';
-import { refreshTokenSignOptions, signJwtToken } from '../../cummon/utils/jwt';
+import { oneDaysFromNow } from '../../common/utils/date-time';
+import { refreshTokenSignOptions, signJwtToken } from '../../common/utils/jwt';
 
 export class MfaService {
   public async generateMFASetup(req: Request) {

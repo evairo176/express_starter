@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 import { imageController } from './image.module';
-import { fileFields, upload } from '../../cummon/utils/multer';
+import { fileFields, upload } from '../../common/utils/multer';
 
 const imageRoutes = Router();
 

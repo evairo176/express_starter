@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
 
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 
 import { HTTPSTATUS } from '../../config/http.config';
 import { TechStackService } from './techStack.service';
 import {
   CreateTechStackSchema,
   UpdateTechStackSchema,
-} from '../../cummon/zod/tech-stack.schema';
+} from '../../common/zod/tech-stack.schema';
 
 export class TechStackController {
   private TechStackService: TechStackService;

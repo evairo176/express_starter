@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_module_1 = require("./auth.module");
-const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const jwt_strategy_1 = require("../../common/strategies/jwt.strategy");
 /**
  * @swagger
  * tags:

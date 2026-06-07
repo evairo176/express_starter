@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionController = void 0;
 const middlewares_1 = require("../../middlewares");
 const http_config_1 = require("../../config/http.config");
-const catch_errors_1 = require("../../cummon/utils/catch-errors");
+const catch_errors_1 = require("../../common/utils/catch-errors");
 const zod_1 = require("zod");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const response_1 = __importDefault(require("../../common/utils/response"));
 class SessionController {
     constructor(sessionService) {
         this.getSessionByUser = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

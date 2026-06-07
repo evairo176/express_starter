@@ -14,9 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PortfolioTagController = void 0;
 const middlewares_1 = require("../../middlewares");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const response_1 = __importDefault(require("../../common/utils/response"));
 const http_config_1 = require("../../config/http.config");
-const portfolio_tag_schema_1 = require("../../cummon/zod/portfolio-tag.schema");
+const portfolio_tag_schema_1 = require("../../common/zod/portfolio-tag.schema");
 class PortfolioTagController {
     constructor(PortfolioTagService) {
         this.create = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

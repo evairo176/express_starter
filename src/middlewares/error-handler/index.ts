@@ -1,12 +1,12 @@
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
 import { HTTPSTATUS } from '../../config/http.config';
-import { AppError } from '../../cummon/utils/app-error';
+import { AppError } from '../../common/utils/app-error';
 import { z } from 'zod';
 import {
   AUTH_PATH,
   clearAuthenticationCookies,
-} from '../../cummon/utils/cookies';
-import response from '../../cummon/utils/response';
+} from '../../common/utils/cookies';
+import response from '../../common/utils/response';
 
 const formatZodError = (res: Response, error: z.ZodError) => {
   const errors = error?.issues?.map((err) => ({

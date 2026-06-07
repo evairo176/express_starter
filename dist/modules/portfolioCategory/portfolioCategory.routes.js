@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const jwt_strategy_1 = require("../../common/strategies/jwt.strategy");
 const portfolioCategory_module_1 = require("./portfolioCategory.module");
 /**
  * @swagger
@@ -49,7 +49,7 @@ portfolioCategoryRoutes.post('/', jwt_strategy_1.authenticateJWT, portfolioCateg
  *       200:
  *         description: List of categories
  */
-portfolioCategoryRoutes.get('/', jwt_strategy_1.authenticateJWT, portfolioCategory_module_1.portfolioCategoryController.findAll);
+portfolioCategoryRoutes.get('/', portfolioCategory_module_1.portfolioCategoryController.findAll);
 /**
  * @swagger
  * /portfolio-category/{id}:

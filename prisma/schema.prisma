@@ -152,6 +152,11 @@ model Portfolio {
   repoUrl  String?
   featured Boolean @default(false)
 
+  // case study
+  problem  String? @db.Text
+  solution String? @db.Text
+  results  String? @db.Text
+
   // SEO
   metaTitle String?
   metaDesc  String?
@@ -165,6 +170,7 @@ model Portfolio {
   images     PortfolioImage[]
   tags       PortfolioTagOnPortfolio[]
   techStacks TechStackOnPortfolio[]
+  views      PortfolioView[]
 }
 
 model Image {
@@ -196,6 +202,151 @@ model BlogPost {
   isPublished Boolean  @default(false)
   totalViews  Int      @default(0)
   totalLikes  Int      @default(0)
+  categoryId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // relations
+  category  BlogCategory?       @relation(fields: [categoryId], references: [id])
+  tags      BlogTagOnBlogPost[]
+  comments  BlogComment[]
+  reactions BlogReaction[]
+  views     BlogPostView[]
+}
+
+// =====================
+// BLOG CATEGORY & TAGS
+// =====================
+model BlogCategory {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  slug      String     @unique
+  createdAt DateTime   @default(now())
+  posts     BlogPost[]
+}
+
+model BlogTag {
+  id    String              @id @default(uuid())
+  name  String
+  slug  String              @unique
+  posts BlogTagOnBlogPost[]
+}
+
+model BlogTagOnBlogPost {
+  blogPostId String   @db.Uuid
+  tagId      String
+  post       BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tag        BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, tagId])
+}
+
+// =====================
+// BLOG COMMENTS, REACTIONS, VIEWS
+// =====================
+model BlogComment {
+  id         String   @id @default(uuid())
+  blogPostId String   @db.Uuid
+  name       String
+  email      String
+  body       String   @db.Text
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  post       BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@index([blogPostId, isApproved, createdAt])
+}
+
+model BlogReaction {
+  id         String   @id @default(uuid())
+  blogPostId String   @db.Uuid
+  type       String   @default("like")
+  createdAt  DateTime @default(now())
+  post       BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@index([blogPostId])
+}
+
+model BlogPostView {
+  id         String   @id @default(uuid())
+  blogPostId String   @db.Uuid
+  sessionId  String
+  createdAt  DateTime @default(now())
+  post       BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, sessionId])
+  @@index([blogPostId, createdAt])
+}
+
+// =====================
+// CONTACT, NEWSLETTER, TESTIMONIAL
+// =====================
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model NewsletterSubscription {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  isActive         Boolean  @default(true)
+  unsubscribeToken String   @unique
+  createdAt        DateTime @default(now())
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  authorName  String
+  authorRole  String
+  quote       String   @db.Text
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// =====================
+// ACHIEVEMENT (awards / certifications / milestones)
+// =====================
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  issuer      String?
+  description String?  @db.Text
+  date        DateTime
+  url         String?
+  icon        String?
+  category    String?
+  position    Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, position])
+}
+
+// =====================
+// ANALYTICS
+// =====================
+model VisitEvent {
+  id        String   @id @default(uuid())
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+}
+
+model PortfolioView {
+  id          String    @id @default(uuid())
+  portfolioId String
+  sessionId   String
+  createdAt   DateTime  @default(now())
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioId, sessionId])
 }

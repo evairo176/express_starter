@@ -15,10 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const middlewares_1 = require("../../middlewares");
 const http_config_1 = require("../../config/http.config");
-const auth_schema_1 = require("../../cummon/zod/auth.schema");
-const cookies_1 = require("../../cummon/utils/cookies");
-const catch_errors_1 = require("../../cummon/utils/catch-errors");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const auth_schema_1 = require("../../common/zod/auth.schema");
+const cookies_1 = require("../../common/utils/cookies");
+const catch_errors_1 = require("../../common/utils/catch-errors");
+const response_1 = __importDefault(require("../../common/utils/response"));
 class AuthController {
     constructor(authService, mfaService) {
         this.register = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

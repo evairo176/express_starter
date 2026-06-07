@@ -13,12 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MfaService = void 0;
-const catch_errors_1 = require("../../cummon/utils/catch-errors");
+const catch_errors_1 = require("../../common/utils/catch-errors");
 const speakeasy_1 = __importDefault(require("speakeasy"));
 const qrcode_1 = __importDefault(require("qrcode"));
 const database_1 = require("../../database/database");
-const date_time_1 = require("../../cummon/utils/date-time");
-const jwt_1 = require("../../cummon/utils/jwt");
+const date_time_1 = require("../../common/utils/date-time");
+const jwt_1 = require("../../common/utils/jwt");
 class MfaService {
     generateMFASetup(req) {
         return __awaiter(this, void 0, void 0, function* () {

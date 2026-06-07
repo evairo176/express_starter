@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 import { mfaController } from './mfa.module';
 
 const mfaRoutes = Router();

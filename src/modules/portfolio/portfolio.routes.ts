@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 import { portfolioController } from './portfolio.module';
+import { cacheMiddleware } from '../../middlewares/cache';
 
 /**
  * @swagger
@@ -96,6 +97,79 @@ portfolioRoutes.post('/', authenticateJWT, portfolioController.create);
  *         description: List of portfolios
  */
 portfolioRoutes.get('/', portfolioController.findAll);
+
+/**
+ * @swagger
+ * /portfolio/public:
+ *   get:
+ *     summary: Get published portfolios with filters, search, and pagination
+ *     tags: [Portfolio]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: category
+ *         description: Category slug
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tags
+ *         description: CSV of tag slugs (AND semantics)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tech
+ *         description: CSV of tech stack names (AND semantics)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         description: Case-insensitive title/shortDesc search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: featured
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: List of published portfolios with pagination metadata
+ */
+portfolioRoutes.get(
+  '/public',
+  cacheMiddleware({ tags: ['portfolio'] }),
+  portfolioController.findPublic,
+);
+
+/**
+ * @swagger
+ * /portfolio/public/{slug}:
+ *   get:
+ *     summary: Get a published portfolio by slug
+ *     tags: [Portfolio]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Published portfolio detail
+ *       404:
+ *         description: Portfolio not found or not published
+ */
+portfolioRoutes.get(
+  '/public/:slug',
+  cacheMiddleware({ tags: ['portfolio'] }),
+  portfolioController.findPublicBySlug,
+);
 
 /**
  * @swagger

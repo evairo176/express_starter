@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
 
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 import {
   CreatePortfolioCategorySchema,
   UpdatePortfolioCategorySchema,
-} from '../../cummon/zod/portfolio-category.schema';
+} from '../../common/zod/portfolio-category.schema';
 
 import { HTTPSTATUS } from '../../config/http.config';
 import { PortfolioCategoryService } from './portfolioCategory.service';

@@ -10,8 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PortfolioService = void 0;
-const catch_errors_1 = require("../../cummon/utils/catch-errors");
+const catch_errors_1 = require("../../common/utils/catch-errors");
+const pagination_1 = require("../../common/utils/pagination");
 const database_1 = require("../../database/database");
+const cache_1 = require("../../common/cache/cache");
+/** Cache tag for all public portfolio responses (Req 14.3). */
+const PORTFOLIO_CACHE_TAG = 'portfolio';
 class PortfolioService {
     create(data) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -33,6 +37,9 @@ class PortfolioService {
                     categoryId: data.categoryId,
                     liveUrl: data.liveUrl,
                     repoUrl: data.repoUrl,
+                    problem: data.problem,
+                    solution: data.solution,
+                    results: data.results,
                     featured: data.featured,
                     isPublished: data.isPublished,
                 },
@@ -49,6 +56,8 @@ class PortfolioService {
                     ? this.syncTechs(portfolio.id, data.techIds)
                     : Promise.resolve(),
             ]);
+            // Invalidate cached public portfolio responses (Req 14.3).
+            cache_1.cacheStore.delByTag(PORTFOLIO_CACHE_TAG);
             return portfolio;
         });
     }
@@ -68,6 +77,9 @@ class PortfolioService {
                     featured: data.featured,
                     liveUrl: data.liveUrl,
                     repoUrl: data.repoUrl,
+                    problem: data.problem,
+                    solution: data.solution,
+                    results: data.results,
                 },
             });
             // 2️⃣ RELASI BERAT (DI LUAR TRANSACTION)
@@ -82,6 +94,8 @@ class PortfolioService {
                     ? this.resetTechs(updated.id, data.techIds)
                     : Promise.resolve(),
             ]);
+            // Invalidate cached public portfolio responses (Req 14.3).
+            cache_1.cacheStore.delByTag(PORTFOLIO_CACHE_TAG);
             return updated;
         });
     }
@@ -159,11 +173,118 @@ class PortfolioService {
             });
         });
     }
+    /**
+     * Public project detail by slug (Req 1.2, 1.3, 1.4, 1.5, 1.6).
+     *
+     * Returns problem/solution/results, the image gallery ordered by `position`
+     * ascending, liveUrl, repoUrl, category, tags, and tech stack (name + icon).
+     * Throws `NotFoundException` (404) when the slug does not exist or the
+     * project is not published.
+     */
+    findPublishedBySlug(slug) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const portfolio = yield database_1.db.portfolio.findUnique({
+                where: { slug },
+                include: {
+                    category: true,
+                    // Gallery ordered by ascending position (Req 1.6).
+                    images: { orderBy: { position: 'asc' } },
+                    tags: { include: { tag: true } },
+                    // Tech stack entries include name + icon (Req 1.3).
+                    techStacks: { include: { tech: true } },
+                },
+            });
+            // 404 when slug missing OR the project is not published (Req 1.4, 1.5).
+            if (!portfolio || !portfolio.isPublished) {
+                throw new catch_errors_1.NotFoundException(`Portfolio with slug "${slug}" not found`, "RESOURCE_NOT_FOUND" /* ErrorCode.RESOURCE_NOT_FOUND */);
+            }
+            return portfolio;
+        });
+    }
+    /**
+     * Public project list with filters, search, featured, and pagination
+     * (Req 2.1–2.8).
+     *
+     * - Always constrains `isPublished = true` (Req 2.5).
+     * - Category filter matches `category.slug` (Req 2.1).
+     * - Tag and tech filters use AND semantics: every requested slug must be
+     *   present (Req 2.2, 2.3).
+     * - Search matches `title` OR `shortDesc`, case-insensitively (Req 2.4).
+     * - `featured=true` constrains `featured = true` (Req 2.6).
+     * - Returns `Pagination_Metadata` in every response (Req 2.7).
+     */
+    findPublic(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d;
+            const page = (_a = params.page) !== null && _a !== void 0 ? _a : 1;
+            const limit = (_b = params.limit) !== null && _b !== void 0 ? _b : 10;
+            const skip = (page - 1) * limit;
+            // Only published projects are ever returned (Req 2.5).
+            const where = {
+                isPublished: true,
+            };
+            // Category filter by slug (Req 2.1).
+            if (params.category) {
+                where.category = { slug: params.category };
+            }
+            // Featured filter (Req 2.6).
+            if (params.featured === true) {
+                where.featured = true;
+            }
+            // Case-insensitive title/shortDesc search (Req 2.4).
+            if (params.search && params.search.trim() !== '') {
+                where.OR = [
+                    { title: { contains: params.search, mode: 'insensitive' } },
+                    { shortDesc: { contains: params.search, mode: 'insensitive' } },
+                ];
+            }
+            // AND-semantics tag filter: every requested tag slug must be present (Req 2.2).
+            if (params.tags && params.tags.length) {
+                where.AND = [
+                    ...((_c = where.AND) !== null && _c !== void 0 ? _c : []),
+                    ...params.tags.map((slug) => ({
+                        tags: { some: { tag: { slug } } },
+                    })),
+                ];
+            }
+            // AND-semantics tech filter: every requested tech must be present (Req 2.3).
+            // NOTE: TechStack has no `slug` field in the schema; its unique identifier
+            // is `name`, so tech filters match by `name`.
+            if (params.tech && params.tech.length) {
+                where.AND = [
+                    ...((_d = where.AND) !== null && _d !== void 0 ? _d : []),
+                    ...params.tech.map((name) => ({
+                        techStacks: { some: { tech: { name } } },
+                    })),
+                ];
+            }
+            const total = yield database_1.db.portfolio.count({ where });
+            const data = yield database_1.db.portfolio.findMany({
+                where,
+                orderBy: { updatedAt: 'desc' },
+                skip,
+                take: limit,
+                include: {
+                    category: true,
+                    images: { orderBy: { position: 'asc' } },
+                    tags: { include: { tag: true } },
+                    techStacks: { include: { tech: true } },
+                },
+            });
+            return {
+                data,
+                metadata: (0, pagination_1.buildPaginationMetadata)(total, page, limit),
+            };
+        });
+    }
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return database_1.db.portfolio.delete({
+            const deleted = yield database_1.db.portfolio.delete({
                 where: { id },
             });
+            // Invalidate cached public portfolio responses (Req 14.3).
+            cache_1.cacheStore.delByTag(PORTFOLIO_CACHE_TAG);
+            return deleted;
         });
     }
     syncImages(portfolioId, images) {
@@ -189,19 +310,26 @@ class PortfolioService {
     }
     syncTags(portfolioId, tags) {
         return __awaiter(this, void 0, void 0, function* () {
-            const records = yield Promise.all(tags.map((name) => {
+            const records = yield Promise.all(tags.map((value) => __awaiter(this, void 0, void 0, function* () {
+                // The admin form submits existing tag IDs; only fall back to
+                // create-by-name when the value is not an existing tag id.
+                const byId = yield database_1.db.portfolioTag.findUnique({ where: { id: value } });
+                if (byId)
+                    return byId;
+                const name = value;
                 const slug = name.toLowerCase().replace(/\s+/g, '-');
                 return database_1.db.portfolioTag.upsert({
                     where: { slug },
                     update: {},
                     create: { name, slug },
                 });
-            }));
+            })));
             yield database_1.db.portfolioTagOnPortfolio.createMany({
                 data: records.map((tag) => ({
                     portfolioId,
                     tagId: tag.id,
                 })),
+                skipDuplicates: true,
             });
         });
     }
@@ -215,16 +343,24 @@ class PortfolioService {
     }
     syncTechs(portfolioId, techs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const records = yield Promise.all(techs.map((name) => database_1.db.techStack.upsert({
-                where: { name },
-                update: {},
-                create: { name },
+            const records = yield Promise.all(techs.map((value) => __awaiter(this, void 0, void 0, function* () {
+                // The admin form submits existing tech-stack IDs; only fall back to
+                // create-by-name when the value is not an existing tech id.
+                const byId = yield database_1.db.techStack.findUnique({ where: { id: value } });
+                if (byId)
+                    return byId;
+                return database_1.db.techStack.upsert({
+                    where: { name: value },
+                    update: {},
+                    create: { name: value },
+                });
             })));
             yield database_1.db.techStackOnPortfolio.createMany({
                 data: records.map((tech) => ({
                     portfolioId,
                     techId: tech.id,
                 })),
+                skipDuplicates: true,
             });
         });
     }

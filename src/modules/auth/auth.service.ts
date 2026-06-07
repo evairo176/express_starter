@@ -1,18 +1,18 @@
 import { VerificationType } from '@prisma/client';
-import { ErrorCode } from '../../cummon/enums/error-code.enum';
+import { ErrorCode } from '../../common/enums/error-code.enum';
 import {
   LoginDto,
   RegisterDto,
   ResetPasswordDto,
-} from '../../cummon/interface/auth.interface';
+} from '../../common/interface/auth.interface';
 import {
   BadRequestException,
   HttpException,
   InternalServerException,
   NotFoundException,
   UnauthorizedException,
-} from '../../cummon/utils/catch-errors';
-import { generateUniqueCode } from '../../cummon/utils/uuid';
+} from '../../common/utils/catch-errors';
+import { generateUniqueCode } from '../../common/utils/uuid';
 import { db } from '../../database/database';
 import {
   anHourFromNow,
@@ -20,8 +20,8 @@ import {
   fortyFiveMinutesFromNow,
   oneDaysFromNow,
   threeMinutesAgo,
-} from '../../cummon/utils/date-time';
-import { compareValue, hashValue } from '../../cummon/utils/bcrypt';
+} from '../../common/utils/date-time';
+import { compareValue, hashValue } from '../../common/utils/bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { config } from '../../config/app.config';
 import {
@@ -29,8 +29,8 @@ import {
   RefreshTPayload,
   signJwtToken,
   verifyJwtToken,
-} from '../../cummon/utils/jwt';
-import { VerificationEnum } from '../../cummon/enums/verification-code.enum';
+} from '../../common/utils/jwt';
+import { VerificationEnum } from '../../common/enums/verification-code.enum';
 import { sendEmail } from '../../mailers/mailer';
 import {
   passwordResetTemplate,

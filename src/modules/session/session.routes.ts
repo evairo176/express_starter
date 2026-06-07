@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { sessionController } from './session.module';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 
 /**
  * @swagger

@@ -14,9 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TechStackController = void 0;
 const middlewares_1 = require("../../middlewares");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const response_1 = __importDefault(require("../../common/utils/response"));
 const http_config_1 = require("../../config/http.config");
-const tech_stack_schema_1 = require("../../cummon/zod/tech-stack.schema");
+const tech_stack_schema_1 = require("../../common/zod/tech-stack.schema");
 class TechStackController {
     constructor(TechStackService) {
         this.create = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

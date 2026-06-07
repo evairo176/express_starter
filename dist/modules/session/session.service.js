@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionService = void 0;
-const catch_errors_1 = require("../../cummon/utils/catch-errors");
+const catch_errors_1 = require("../../common/utils/catch-errors");
 const database_1 = require("../../database/database");
 class SessionService {
     getSessionByUser(_a) {

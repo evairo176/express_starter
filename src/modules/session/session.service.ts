@@ -1,4 +1,4 @@
-import { NotFoundException } from '../../cummon/utils/catch-errors';
+import { NotFoundException } from '../../common/utils/catch-errors';
 import { db } from '../../database/database';
 
 export class SessionService {

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 import { portfolioCategoryController } from './portfolioCategory.module';
 
 /**
@@ -54,11 +54,7 @@ portfolioCategoryRoutes.post(
  *       200:
  *         description: List of categories
  */
-portfolioCategoryRoutes.get(
-  '/',
-  authenticateJWT,
-  portfolioCategoryController.findAll,
-);
+portfolioCategoryRoutes.get('/', portfolioCategoryController.findAll);
 
 /**
  * @swagger

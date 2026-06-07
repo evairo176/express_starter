@@ -5,9 +5,9 @@ import { MfaService } from './mfa.service';
 import {
   verifyMFAForLoginSchema,
   verifyMfaSchema,
-} from '../../cummon/zod/mfa.schema';
-import { setAuthenticationCookies } from '../../cummon/utils/cookies';
-import response from '../../cummon/utils/response';
+} from '../../common/zod/mfa.schema';
+import { setAuthenticationCookies } from '../../common/utils/cookies';
+import response from '../../common/utils/response';
 
 export class MfaController {
   private mfaService: MfaService;

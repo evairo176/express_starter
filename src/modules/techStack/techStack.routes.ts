@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../../cummon/strategies/jwt.strategy';
+import { authenticateJWT } from '../../common/strategies/jwt.strategy';
 import { techStackController } from './techStack.module';
 
 /**
@@ -49,7 +49,7 @@ techStackRoutes.post('/', authenticateJWT, techStackController.create);
  *       200:
  *         description: List of tech stacks
  */
-techStackRoutes.get('/', authenticateJWT, techStackController.findAll);
+techStackRoutes.get('/', techStackController.findAll);
 
 /**
  * @swagger

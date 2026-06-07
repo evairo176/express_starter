@@ -1,7 +1,7 @@
 // src/services/imageService.ts
 import { Readable } from 'stream';
 import { db } from '../../database/database'; // sesuai permintaan Anda
-import cloudinary from '../../cummon/utils/cloudinary';
+import cloudinary from '../../common/utils/cloudinary';
 import { Prisma } from '@prisma/client';
 
 /**

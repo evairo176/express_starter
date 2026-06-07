@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const session_module_1 = require("./session.module");
-const jwt_strategy_1 = require("../../cummon/strategies/jwt.strategy");
+const jwt_strategy_1 = require("../../common/strategies/jwt.strategy");
 /**
  * @swagger
  * tags:

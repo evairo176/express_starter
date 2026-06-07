@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MfaController = void 0;
 const http_config_1 = require("../../config/http.config");
 const middlewares_1 = require("../../middlewares");
-const mfa_schema_1 = require("../../cummon/zod/mfa.schema");
-const cookies_1 = require("../../cummon/utils/cookies");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const mfa_schema_1 = require("../../common/zod/mfa.schema");
+const cookies_1 = require("../../common/utils/cookies");
+const response_1 = __importDefault(require("../../common/utils/response"));
 class MfaController {
     constructor(mfaService) {
         this.generateMFASetup = (0, middlewares_1.asyncHandler)((req, res) => __awaiter(this, void 0, void 0, function* () {

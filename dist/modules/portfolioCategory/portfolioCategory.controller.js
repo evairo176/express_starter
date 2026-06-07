@@ -14,8 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PortfolioCategoryController = void 0;
 const middlewares_1 = require("../../middlewares");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
-const portfolio_category_schema_1 = require("../../cummon/zod/portfolio-category.schema");
+const response_1 = __importDefault(require("../../common/utils/response"));
+const portfolio_category_schema_1 = require("../../common/zod/portfolio-category.schema");
 const http_config_1 = require("../../config/http.config");
 class PortfolioCategoryController {
     constructor(portfolioCategoryService) {

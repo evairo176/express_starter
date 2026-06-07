@@ -1,7 +1,7 @@
 import {
   CreateTechStackDTO,
   UpdateTechStackDTO,
-} from '../../cummon/zod/tech-stack.schema';
+} from '../../common/zod/tech-stack.schema';
 import { db } from '../../database/database';
 
 export class TechStackService {

@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
 
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 
 import { HTTPSTATUS } from '../../config/http.config';
 import { PortfolioTagService } from './portfolioTag.service';
 import {
   CreatePortfolioTagSchema,
   UpdatePortfolioTagSchema,
-} from '../../cummon/zod/portfolio-tag.schema';
+} from '../../common/zod/portfolio-tag.schema';
 
 export class PortfolioTagController {
   private PortfolioTagService: PortfolioTagService;

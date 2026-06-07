@@ -27,7 +27,7 @@ exports.ImageService = void 0;
 // src/services/imageService.ts
 const stream_1 = require("stream");
 const database_1 = require("../../database/database"); // sesuai permintaan Anda
-const cloudinary_1 = __importDefault(require("../../cummon/utils/cloudinary"));
+const cloudinary_1 = __importDefault(require("../../common/utils/cloudinary"));
 class ImageService {
     /**
      * Upload buffer -> Cloudinary using upload_stream (Readable.from)

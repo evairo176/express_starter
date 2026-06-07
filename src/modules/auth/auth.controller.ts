@@ -8,19 +8,19 @@ import {
   registerSchema,
   resetPasswordSchema,
   verificationEmailSchema,
-} from '../../cummon/zod/auth.schema';
+} from '../../common/zod/auth.schema';
 import {
   clearAuthenticationCookies,
   getAccessTokenCookieOptions,
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
-} from '../../cummon/utils/cookies';
+} from '../../common/utils/cookies';
 import {
   NotFoundException,
   UnauthorizedException,
-} from '../../cummon/utils/catch-errors';
+} from '../../common/utils/catch-errors';
 import { MfaService } from '../mfa/mfa.service';
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 
 export class AuthController {
   private authService: AuthService;

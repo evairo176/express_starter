@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../../middlewares';
 
 import { PortfolioService } from './portfolio.service';
-import response from '../../cummon/utils/response';
+import response from '../../common/utils/response';
 import {
   CreatePortfolioSchema,
   UpdatePortfolioSchema,
-} from '../../cummon/zod/portofolio.schema';
+} from '../../common/zod/portofolio.schema';
+import { PortfolioPublicListQuerySchema } from '../../common/zod/portfolio-public-list.schema';
 import { HTTPSTATUS } from '../../config/http.config';
 
 export class PortfolioController {
@@ -58,6 +59,64 @@ export class PortfolioController {
         res,
         result,
         `Get portfolio successfully`,
+        HTTPSTATUS.OK,
+      );
+    },
+  );
+
+  // Public endpoints (no auth) ------------------------------------------------
+
+  /**
+   * Public project list with filters, search, featured, and pagination
+   * (Req 2.1–2.8). Query is validated by `PortfolioPublicListQuerySchema`;
+   * `tags`/`tech` arrive as CSV strings and are split on comma.
+   */
+  public findPublic = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const parsed = PortfolioPublicListQuerySchema.parse({ ...req.query });
+
+      const splitCsv = (value?: string): string[] | undefined =>
+        value
+          ? value
+              .split(',')
+              .map((entry) => entry.trim())
+              .filter((entry) => entry.length > 0)
+          : undefined;
+
+      const { data, metadata } = await this.portfolioService.findPublic({
+        page: parsed.page,
+        limit: parsed.limit,
+        category: parsed.category,
+        tags: splitCsv(parsed.tags),
+        tech: splitCsv(parsed.tech),
+        search: parsed.search,
+        featured: parsed.featured,
+      });
+
+      return response.success(
+        res,
+        data,
+        `Find public portfolios successfully`,
+        HTTPSTATUS.OK,
+        metadata,
+      );
+    },
+  );
+
+  /**
+   * Public project detail by slug (Req 1.2–1.6). The service throws a 404 when
+   * the slug is missing or the project is not published.
+   */
+  public findPublicBySlug = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const result = await this.portfolioService.findPublishedBySlug(
+        req.params.slug,
+      );
+
+      return response.success(
+        res,
+        result,
+        `Get public portfolio successfully`,
         HTTPSTATUS.OK,
       );
     },

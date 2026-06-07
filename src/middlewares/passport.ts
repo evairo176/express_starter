@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { setupJwtStrategy } from '../cummon/strategies/jwt.strategy';
+import { setupJwtStrategy } from '../common/strategies/jwt.strategy';
 
 const initializePassport = () => {
   setupJwtStrategy(passport);

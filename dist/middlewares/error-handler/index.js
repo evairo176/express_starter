@@ -5,10 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorHandler = void 0;
 const http_config_1 = require("../../config/http.config");
-const app_error_1 = require("../../cummon/utils/app-error");
+const app_error_1 = require("../../common/utils/app-error");
 const zod_1 = require("zod");
-const cookies_1 = require("../../cummon/utils/cookies");
-const response_1 = __importDefault(require("../../cummon/utils/response"));
+const cookies_1 = require("../../common/utils/cookies");
+const response_1 = __importDefault(require("../../common/utils/response"));
 const formatZodError = (res, error) => {
     var _a;
     const errors = (_a = error === null || error === void 0 ? void 0 : error.issues) === null || _a === void 0 ? void 0 : _a.map((err) => ({

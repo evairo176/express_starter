@@ -1,7 +1,7 @@
 import {
   CreatePortfolioCategoryDTO,
   UpdatePortfolioCategoryDTO,
-} from '../../cummon/zod/portfolio-category.schema';
+} from '../../common/zod/portfolio-category.schema';
 import { db } from '../../database/database';
 
 export class PortfolioCategoryService {
